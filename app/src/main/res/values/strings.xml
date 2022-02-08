@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Grpr</string>
+    <string name="login">login</string>
+    <string name="password">password</string>
+    <string name="email_or_username">email_or_username</string>
+    <string name="grpr">grpr</string>
 </resources>
