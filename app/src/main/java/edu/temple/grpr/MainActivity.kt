@@ -3,12 +3,11 @@ package edu.temple.grpr
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.LocationManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.AuthFailureError
 import com.android.volley.RequestQueue
 import com.android.volley.Response
@@ -64,7 +63,6 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
     }
 
     override fun loginButtonPressed(username : String, password: String) {
-        Toast.makeText(this, "login button pressed", Toast.LENGTH_LONG).show()
         Log.d("login button", "user clicked login button")
         loginRequest(username, password)
         supportFragmentManager.beginTransaction()
@@ -73,7 +71,6 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
     }
 
     override fun registerButtonPressed() {
-        Toast.makeText(this, "register button pressed", Toast.LENGTH_LONG).show()
         Log.d("Register button", "user clicked register button")
         startActivity(registerIntent)
         supportFragmentManager.beginTransaction()
@@ -82,27 +79,22 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
     }
 
     override fun logout() {
-        //TODO add check to see if logout worked correctly
         logoutRequest()
         supportFragmentManager.beginTransaction()
             .replace(R.id.container, LoginOrRegister())
             .commit()
     }
 
-    override fun permissionGranted(): Boolean {
-        return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-    }
-
     override fun createFABPressed() {
-        TODO("Not yet implemented")
+        Log.d("create fab", "clicked")
     }
 
     override fun joinFABPressed() {
-        TODO("Not yet implemented")
+        Log.d("join fab", "clicked")
     }
 
     override fun leaveButtonPressed() {
-        TODO("Not yet implemented")
+        Log.d("leave button", "clicked")
     }
 
     private fun loginRequest(username: String, password: String){

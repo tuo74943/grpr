@@ -1,6 +1,5 @@
 package edu.temple.grpr
 
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
