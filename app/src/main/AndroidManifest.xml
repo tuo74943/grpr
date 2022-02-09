@@ -3,6 +3,8 @@
     package="edu.temple.grpr" >
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
         android:allowBackup="true"
@@ -23,6 +25,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyAs4E_U6ipY2TGqEYwwaRJsSvpmFk_Drbc"/>
+
+    </application>
 </manifest>

@@ -1,6 +1,9 @@
 package edu.temple.grpr
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -39,6 +42,10 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
 
         registerIntent = Intent(this, RegisterActivity::class.java)
 
+        if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 123)
+        }
+
         if(mPrefs.contains("session_key")){
             username = mPrefs.getString("username", "").toString()
             sessionKey = mPrefs.getString("session_key", "").toString()
@@ -53,9 +60,6 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
                 .add(R.id.container, LoginOrRegister())
                 .commit()
         }
-
-
-
 
     }
 
@@ -83,6 +87,22 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
         supportFragmentManager.beginTransaction()
             .replace(R.id.container, LoginOrRegister())
             .commit()
+    }
+
+    override fun permissionGranted(): Boolean {
+        return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun createFABPressed() {
+        TODO("Not yet implemented")
+    }
+
+    override fun joinFABPressed() {
+        TODO("Not yet implemented")
+    }
+
+    override fun leaveButtonPressed() {
+        TODO("Not yet implemented")
     }
 
     private fun loginRequest(username: String, password: String){
@@ -181,4 +201,19 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
         }
         volleyQueue.add(stringRequest)
     }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(requestCode == 123){
+            if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                finish()
+            }
+        }
+    }
+
+
 }
