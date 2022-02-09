@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -18,19 +19,10 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class LoginOrRegister : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
     lateinit var loginButton : Button
     lateinit var registerButton: Button
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    lateinit var userNameEditText: EditText
+    lateinit var passwordEditText: EditText
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,6 +32,8 @@ class LoginOrRegister : Fragment() {
         val layout = inflater.inflate(R.layout.fragment_login_or_register, container, false)
         loginButton = layout.findViewById(R.id.loginButton)
         registerButton = layout.findViewById(R.id.registerButton)
+        userNameEditText = layout.findViewById(R.id.usernameEditText)
+        passwordEditText = layout.findViewById(R.id.passwordEditText)
         return layout
     }
 
@@ -47,35 +41,16 @@ class LoginOrRegister : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         loginButton.setOnClickListener {
-            (activity as loginOrRegisterInterface).loginButtonPressed();
+            (activity as loginOrRegisterInterface).loginButtonPressed(userNameEditText.text.toString(), passwordEditText.text.toString());
         }
 
         registerButton.setOnClickListener {
             (activity as loginOrRegisterInterface).registerButtonPressed()
         }
     }
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment LoginOrRegister.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            LoginOrRegister().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
-    }
 
     interface loginOrRegisterInterface{
-        fun loginButtonPressed()
+        fun loginButtonPressed(username : String, password : String)
         fun registerButtonPressed()
     }
 }
