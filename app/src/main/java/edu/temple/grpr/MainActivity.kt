@@ -14,7 +14,7 @@ import com.android.volley.toolbox.Volley
 import org.json.JSONObject
 
 
-class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterface{
+class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterface, MainFragment.MainInterface{
 
     lateinit var registerIntent : Intent
 
@@ -30,27 +30,30 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
         getPreferences(MODE_PRIVATE)
     }
 
+    lateinit var username : String
+    lateinit var sessionKey : String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         registerIntent = Intent(this, RegisterActivity::class.java)
 
-        if(savedInstanceState == null){
-            if(mPrefs.contains("session_key")){
-
-                Log.d("MainFragment", "what " + mPrefs.contains("username"))
-                Log.d("MainFragment", "session_key : " + mPrefs.getString("session_key", null))
-                supportFragmentManager.beginTransaction()
-                    .add(R.id.container, MainFragment())
-                    .commit()
-            }
-            else{
-                supportFragmentManager.beginTransaction()
-                    .add(R.id.container, LoginOrRegister())
-                    .commit()
-            }
+        if(mPrefs.contains("session_key")){
+            username = mPrefs.getString("username", "").toString()
+            sessionKey = mPrefs.getString("session_key", "").toString()
+            Log.d("MainFragment", "username " + username)
+            Log.d("MainFragment", "session_key : " + sessionKey)
+            supportFragmentManager.beginTransaction()
+                .add(R.id.container, MainFragment())
+                .commit()
         }
+        else{
+            supportFragmentManager.beginTransaction()
+                .add(R.id.container, LoginOrRegister())
+                .commit()
+        }
+
 
 
 
@@ -59,7 +62,6 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
     override fun loginButtonPressed(username : String, password: String) {
         Toast.makeText(this, "login button pressed", Toast.LENGTH_LONG).show()
         Log.d("login button", "user clicked login button")
-        //TODO send login request to API
         loginRequest(username, password)
         supportFragmentManager.beginTransaction()
             .replace(R.id.container, MainFragment())
@@ -68,11 +70,22 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
 
     override fun registerButtonPressed() {
         Toast.makeText(this, "register button pressed", Toast.LENGTH_LONG).show()
-        Log.d("resgister button", "user clicked register button")
+        Log.d("Register button", "user clicked register button")
         startActivity(registerIntent)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, LoginOrRegister())
+            .commit()
     }
 
-    fun loginRequest(username: String, password: String){
+    override fun logout() {
+        //TODO add check to see if logout worked correctly
+        logoutRequest()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, LoginOrRegister())
+            .commit()
+    }
+
+    private fun loginRequest(username: String, password: String){
         val stringRequest: StringRequest = object : StringRequest(
             Method.POST,
             loginAPI,
@@ -87,6 +100,9 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
                     editor.putString("session_key", jsonObj.getString("session_key"))
                         .putString("username", username)
                         .apply()
+                    //TODO can change this to just use the jsonobject?
+                    this.username = mPrefs.getString("username", "").toString()
+                    sessionKey = mPrefs.getString("session_key", "").toString()
                     Toast.makeText(this,"Login Complete", Toast.LENGTH_SHORT).show()
                 }
             },
@@ -113,6 +129,53 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
                 params["action"] = "LOGIN"
                 params["username"] = username
                 params["password"] = password
+                return params
+            }
+        }
+        volleyQueue.add(stringRequest)
+    }
+
+
+    private fun logoutRequest(){
+        val stringRequest: StringRequest = object : StringRequest(
+            Method.POST,
+            loginAPI,
+            Response.Listener { response ->
+                Log.i("Response", response.toString())
+                val jsonObj = JSONObject(response)
+                if(jsonObj.getString("status") == "ERROR"){
+                    Log.d("ERROR", jsonObj.getString("message"))
+                }
+                else{
+                    val editor = mPrefs.edit()
+                    editor.clear().apply()
+                    Toast.makeText(this,"Logging out", Toast.LENGTH_SHORT).show()
+                }
+            },
+            Response.ErrorListener { error ->
+                Log.i("response error:", "$error")
+                error.printStackTrace()
+            }){
+            override fun getBodyContentType(): String {
+                return "application/x-www-form-urlencoded"
+            }
+
+            override fun getHeaders(): Map<String, String> {
+                val headers: MutableMap<String, String> =
+                    HashMap()
+                headers["Content-Type"] = "application/x-www-form-urlencoded"
+                headers["Accept"] = "application/json"
+                return headers
+            }
+
+            @Throws(AuthFailureError::class)
+            override fun getParams(): Map<String, String> {
+                val params: MutableMap<String, String> =
+                    HashMap()
+                params["action"] = "LOGOUT"
+                params["username"] = username
+                params["session_key"] = sessionKey
+                Log.d("INFO", username + " " + sessionKey)
                 return params
             }
         }
