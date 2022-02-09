@@ -93,6 +93,18 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
         return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
+    override fun createFABPressed() {
+        TODO("Not yet implemented")
+    }
+
+    override fun joinFABPressed() {
+        TODO("Not yet implemented")
+    }
+
+    override fun leaveButtonPressed() {
+        TODO("Not yet implemented")
+    }
+
     private fun loginRequest(username: String, password: String){
         val stringRequest: StringRequest = object : StringRequest(
             Method.POST,

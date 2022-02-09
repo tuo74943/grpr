@@ -63,15 +63,17 @@ class MainFragment : Fragment(), OnMapReadyCallback{
 
         leaveButton.setOnClickListener {
             Log.d("leave button", "clicked")
+            (activity as MainInterface).leaveButtonPressed()
         }
 
         joinFab.setOnClickListener{
             Log.d("join fab", "clicked")
+            (activity as MainInterface).joinFABPressed()
         }
 
         createFab.setOnClickListener{
             Log.d("create fab", "clicked")
-
+            (activity as MainInterface).createFABPressed()
         }
 
         locationListener = LocationListener {
@@ -129,6 +131,9 @@ class MainFragment : Fragment(), OnMapReadyCallback{
     interface MainInterface {
         fun logout()
         fun permissionGranted() : Boolean
+        fun createFABPressed()
+        fun joinFABPressed()
+        fun leaveButtonPressed()
     }
 
     override fun onMapReady(p0: GoogleMap) {
