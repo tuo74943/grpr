@@ -14,9 +14,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Grpr">
-        <activity
-            android:name=".RegisterActivity"
-            android:exported="false" />
+
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyAs4E_U6ipY2TGqEYwwaRJsSvpmFk_Drbc"/>
+
+        <service android:name="LocationService" android:foregroundServiceType="location"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true" >
@@ -26,9 +28,5 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name="LocationService" android:foregroundServiceType="location"/>
-
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyAs4E_U6ipY2TGqEYwwaRJsSvpmFk_Drbc"/>
-
     </application>
 </manifest>
