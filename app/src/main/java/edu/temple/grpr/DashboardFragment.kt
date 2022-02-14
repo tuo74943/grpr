@@ -3,9 +3,7 @@ package edu.temple.grpr
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -56,6 +54,22 @@ class DashboardFragment : Fragment(){
                 createFab.setOnClickListener {(activity as DashboardInterface).endGroup()}
             }
         }
+    }
+
+    // This fragment places a menu item in the app bar
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.dashboard, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        if (item.itemId == R.id.action_logout) {
+            (activity as DashboardInterface).logout()
+            return true
+        }
+
+        return false
     }
 
     interface DashboardInterface {

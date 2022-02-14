@@ -17,4 +17,5 @@
     <string name="last_name">Last Name</string>
     <string name="register_and_login">Register and Login</string>
     <string name="grpr_registration">GRPR Registration</string>
+    <string name="log_out">Log Out</string>
 </resources>
