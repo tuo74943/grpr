@@ -8,7 +8,7 @@
     <string name="title_activity_login">LoginActivity</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
-    <string name="leave_group">Leave Group</string>
+    <string name="leave">Leave</string>
     <string name="logout">logout</string>
     <string name="join">Join</string>
     <string name="create">Create</string>

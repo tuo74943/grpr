@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.android.volley.AuthFailureError
 import com.android.volley.RequestQueue
 import com.android.volley.Response
@@ -16,9 +17,13 @@ import com.android.volley.toolbox.Volley
 import org.json.JSONObject
 
 
-class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterface, MainFragment.MainInterface{
+class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterface, DashboardFragment.DashboardInterface{
 
     lateinit var registerIntent : Intent
+
+    val grprViewModel : GrPrViewModel by lazy {
+        ViewModelProvider(this).get(GrPrViewModel::class.java)
+    }
 
     companion object {
         const val loginAPI = "https://kamorris.com/lab/grpr/account.php"
@@ -51,7 +56,7 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
             Log.d("MainFragment", "username " + username)
             Log.d("MainFragment", "session_key : " + sessionKey)
             supportFragmentManager.beginTransaction()
-                .add(R.id.container, MainFragment())
+                .add(R.id.container, DashboardFragment())
                 .commit()
         }
         else{
@@ -66,7 +71,7 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
         Log.d("login button", "user clicked login button")
         loginRequest(username, password)
         supportFragmentManager.beginTransaction()
-            .replace(R.id.container, MainFragment())
+            .replace(R.id.container, DashboardFragment())
             .commit()
     }
 
@@ -85,16 +90,14 @@ class MainActivity : AppCompatActivity(), LoginOrRegister.loginOrRegisterInterfa
             .commit()
     }
 
-    override fun createFABPressed() {
-        Log.d("create fab", "clicked")
+    override fun createGroup() {
+        Log.d("Create","Button was pressed")
+        grprViewModel.setGroupId("group_id")
     }
 
-    override fun joinFABPressed() {
-        Log.d("join fab", "clicked")
-    }
-
-    override fun leaveButtonPressed() {
-        Log.d("leave button", "clicked")
+    override fun endGroup() {
+        Log.d("End","Button was pressed")
+        grprViewModel.setGroupId("")
     }
 
     private fun loginRequest(username: String, password: String){
