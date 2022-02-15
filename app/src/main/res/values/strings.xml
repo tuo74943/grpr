@@ -3,7 +3,6 @@
     <string name="login">login</string>
     <string name="password">Password</string>
     <string name="grpr">GRPR</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="register">Register</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="prompt_email">Email</string>
@@ -18,6 +17,4 @@
     <string name="register_and_login">Register and Login</string>
     <string name="grpr_registration">GRPR Registration</string>
     <string name="log_out">Log Out</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

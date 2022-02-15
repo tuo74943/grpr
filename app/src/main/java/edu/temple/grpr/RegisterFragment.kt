@@ -55,7 +55,6 @@ class RegisterFragment : Fragment() {
                 })
 
         }
-
         return layout
     }
 

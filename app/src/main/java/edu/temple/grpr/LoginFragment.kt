@@ -24,7 +24,6 @@ class LoginFragment : Fragment() {
         // Inflate the layout for this fragment
         layout = inflater.inflate(R.layout.fragment_login, container, false)
 
-        //TODO change to new fragment when user clicks on this button
         layout.findViewById<TextView>(R.id.registerText).setOnClickListener {
             Navigation.findNavController(layout)
                 .navigate(R.id.action_loginFragment_to_registerFragment)

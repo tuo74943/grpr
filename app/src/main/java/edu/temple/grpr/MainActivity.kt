@@ -1,26 +1,52 @@
 package edu.temple.grpr
 
 import android.Manifest
+import android.app.AlertDialog
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.ComponentName
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.os.Bundle
+import android.os.*
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import com.google.android.gms.maps.model.LatLng
+import org.json.JSONObject
 
 
 class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
 
-    lateinit var registerIntent : Intent
-
+    var serviceIntent : Intent? = null
     val grprViewModel : GrPrViewModel by lazy {
         ViewModelProvider(this).get(GrPrViewModel::class.java)
+    }
+
+    var locationHandler = object : Handler(Looper.myLooper()!!) {
+        override fun handleMessage(msg: Message) {
+            grprViewModel.setLocation(msg.obj as LatLng)
+        }
+    }
+
+    var serviceConnection: ServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(componentName: ComponentName, iBinder: IBinder) {
+
+            // Provide service with handler
+            (iBinder as LocationService.LocationBinder).setHandler(locationHandler)
+        }
+
+        override fun onServiceDisconnected(componentName: ComponentName) {}
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        createNotificationChannel()
+        serviceIntent = Intent(this, LocationService::class.java)
 
 
         grprViewModel.getGroupId().observe(this) {
@@ -32,7 +58,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
 
         Helper.user.getGroupId(this)?.run {
             grprViewModel.setGroupId(this)
-//            startLocationService()
+            startLocationService()
         }
 
 
@@ -40,7 +66,12 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 123)
         }
 
+    }
 
+    private fun createNotificationChannel() {
+        val channel =
+            NotificationChannel("default", "Active Convoy", NotificationManager.IMPORTANCE_HIGH)
+        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
 
     override fun logout() {
@@ -51,12 +82,42 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
 
     override fun createGroup() {
         Log.d("Create","Button was pressed")
-        grprViewModel.setGroupId("group_id")
+        Helper.api.createGroup(this, Helper.user.get(this), Helper.user.getSessionKey(this)!!, object: Helper.api.Response {
+            override fun processResponse(response: JSONObject) {
+                if (Helper.api.isSuccess(response)) {
+                    grprViewModel.setGroupId(response.getString("group_id"))
+                    Helper.user.saveGroupId(this@MainActivity, grprViewModel.getGroupId().value!!)
+                    startLocationService()
+                } else {
+                    Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
     }
 
     override fun endGroup() {
-        Log.d("End","Button was pressed")
-        grprViewModel.setGroupId("")
+        AlertDialog.Builder(this).setTitle("Close Group")
+            .setMessage("Are you sure you want to close the group?")
+            .setPositiveButton("Yes"
+            ) { _, _ -> Helper.api.closeGroup(
+                this,
+                Helper.user.get(this),
+                Helper.user.getSessionKey(this)!!,
+                grprViewModel.getGroupId().value!!,
+                object: Helper.api.Response {
+                    override fun processResponse(response: JSONObject) {
+                        if (Helper.api.isSuccess(response)) {
+                            grprViewModel.setGroupId("")
+                            Helper.user.clearGroupId(this@MainActivity)
+                            stopLocationService()
+                        } else
+                            Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
+                    }
+
+                }
+            )}
+            .setNegativeButton("Cancel") { p0, _ -> p0.cancel() }
+            .show()
     }
 
     override fun onRequestPermissionsResult(
@@ -70,6 +131,16 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
                 finish()
             }
         }
+    }
+
+    private fun startLocationService(){
+        bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE);
+        startService(serviceIntent)
+    }
+
+    private fun stopLocationService(){
+        unbindService(serviceConnection)
+        stopService(serviceIntent)
     }
 
 
