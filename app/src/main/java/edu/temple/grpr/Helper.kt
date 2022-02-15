@@ -19,7 +19,7 @@ class Helper {
             fun processResponse(response: JSONObject)
         }
 
-    fun createAccount(context: Context, user: User, password: String, response: api.Response?){
+    fun createAccount(context: Context, user: User, password: String, response: Response?){
         val params = mutableMapOf(
             Pair("action", "REGISTER"),
             Pair("username", user.username),
@@ -30,7 +30,7 @@ class Helper {
         makeRequest(context, ENDPOINT_USER, params, response)
     }
 
-    fun login(context: Context, user: User, password: String, response: api.Response?) {
+    fun login(context: Context, user: User, password: String, response: Response?) {
         val params = mutableMapOf(
             Pair("action", "LOGIN"),
             Pair("username", user.username),
@@ -39,7 +39,7 @@ class Helper {
         makeRequest(context, ENDPOINT_USER, params, response)
     }
 
-    fun createGroup(context: Context, user: User, sessionKey: String, response: api.Response?) {
+    fun createGroup(context: Context, user: User, sessionKey: String, response: Response?) {
         val params = mutableMapOf(
             Pair("action", "CREATE"),
             Pair("username", user.username),
@@ -48,7 +48,7 @@ class Helper {
         makeRequest(context, ENDPOINT_GROUP, params, response)
     }
 
-    fun closeGroup(context: Context, user: User, sessionKey: String, groupId: String, response: api.Response?) {
+    fun closeGroup(context: Context, user: User, sessionKey: String, groupId: String, response: Response?) {
         val params = mutableMapOf(
             Pair("action", "CLOSE"),
             Pair("username", user.username),

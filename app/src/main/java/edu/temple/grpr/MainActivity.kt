@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
         ViewModelProvider(this).get(GrPrViewModel::class.java)
     }
 
+    //updates Viewmodel with location data whenever we recieve it from the locationservice
     var locationHandler = object : Handler(Looper.myLooper()!!) {
         override fun handleMessage(msg: Message) {
             grprViewModel.setLocation(msg.obj as LatLng)
@@ -66,18 +67,15 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 123)
         }
 
+        bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE)
+
     }
 
     private fun createNotificationChannel() {
         val channel =
             NotificationChannel("default", "Active Convoy", NotificationManager.IMPORTANCE_HIGH)
-        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
-    }
 
-    override fun logout() {
-        Helper.user.clearSessionData(this)
-        Navigation.findNavController(findViewById(R.id.fragmentContainerView))
-            .navigate(R.id.action_dashboardFragment_to_loginFragment)
+        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
 
     override fun createGroup() {
@@ -109,7 +107,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
                         if (Helper.api.isSuccess(response)) {
                             grprViewModel.setGroupId("")
                             Helper.user.clearGroupId(this@MainActivity)
-                            stopLocationService()
+                            stopService(serviceIntent)
                         } else
                             Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
                     }
@@ -120,28 +118,23 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
             .show()
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if(requestCode == 123){
             if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                //if permissions were not granted we close the app
                 finish()
             }
         }
     }
 
     private fun startLocationService(){
-        bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE);
         startService(serviceIntent)
     }
 
-    private fun stopLocationService(){
-        unbindService(serviceConnection)
-        stopService(serviceIntent)
+    override fun logout() {
+        Helper.user.clearSessionData(this)
+        Navigation.findNavController(findViewById(R.id.fragmentContainerView))
+            .navigate(R.id.action_dashboardFragment_to_loginFragment)
     }
-
-
 }
