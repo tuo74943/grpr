@@ -44,7 +44,7 @@ class LocationService : Service() {
         locationManager = getSystemService(LocationManager::class.java)
         locationListener = LocationListener { location: Location ->
             if (handler != null) {
-                val msg: Message = Message.obtain()
+                val msg : Message = Message.obtain()
                 msg.obj = LatLng(location.latitude, location.longitude)
                 handler!!.sendMessage(msg)
             }
