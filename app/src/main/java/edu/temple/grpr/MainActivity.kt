@@ -68,7 +68,6 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
         }
 
         bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE)
-
     }
 
     private fun createNotificationChannel() {

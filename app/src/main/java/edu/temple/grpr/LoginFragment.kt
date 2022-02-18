@@ -1,6 +1,7 @@
 package edu.temple.grpr
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.navigation.Navigation
+import com.google.firebase.messaging.FirebaseMessaging
 import org.json.JSONObject
 
 class LoginFragment : Fragment() {

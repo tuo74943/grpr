@@ -19,73 +19,73 @@ class Helper {
             fun processResponse(response: JSONObject)
         }
 
-    fun createAccount(context: Context, user: User, password: String, response: Response?){
-        val params = mutableMapOf(
-            Pair("action", "REGISTER"),
-            Pair("username", user.username),
-            Pair("password", password),
-            Pair("firstname", user.firstname!!),
-            Pair("lastname", user.lastname!!)
-        )
-        makeRequest(context, ENDPOINT_USER, params, response)
-    }
+        fun createAccount(context: Context, user: User, password: String, response: Response?){
+            val params = mutableMapOf(
+                Pair("action", "REGISTER"),
+                Pair("username", user.username),
+                Pair("password", password),
+                Pair("firstname", user.firstname!!),
+                Pair("lastname", user.lastname!!)
+            )
+            makeRequest(context, ENDPOINT_USER, params, response)
+        }
 
-    fun login(context: Context, user: User, password: String, response: Response?) {
-        val params = mutableMapOf(
-            Pair("action", "LOGIN"),
-            Pair("username", user.username),
-            Pair("password", password)
-        )
-        makeRequest(context, ENDPOINT_USER, params, response)
-    }
+        fun login(context: Context, user: User, password: String, response: Response?) {
+            val params = mutableMapOf(
+                Pair("action", "LOGIN"),
+                Pair("username", user.username),
+                Pair("password", password)
+            )
+            makeRequest(context, ENDPOINT_USER, params, response)
+        }
 
-    fun createGroup(context: Context, user: User, sessionKey: String, response: Response?) {
-        val params = mutableMapOf(
-            Pair("action", "CREATE"),
-            Pair("username", user.username),
-            Pair("session_key", sessionKey)
-        )
-        makeRequest(context, ENDPOINT_GROUP, params, response)
-    }
+        fun createGroup(context: Context, user: User, sessionKey: String, response: Response?) {
+            val params = mutableMapOf(
+                Pair("action", "CREATE"),
+                Pair("username", user.username),
+                Pair("session_key", sessionKey)
+            )
+            makeRequest(context, ENDPOINT_GROUP, params, response)
+        }
 
-    fun closeGroup(context: Context, user: User, sessionKey: String, groupId: String, response: Response?) {
-        val params = mutableMapOf(
-            Pair("action", "CLOSE"),
-            Pair("username", user.username),
-            Pair("session_key", sessionKey),
-            Pair("group_id", groupId)
-        )
-        makeRequest(context, ENDPOINT_GROUP, params, response)
-    }
+        fun closeGroup(context: Context, user: User, sessionKey: String, groupId: String, response: Response?) {
+            val params = mutableMapOf(
+                Pair("action", "CLOSE"),
+                Pair("username", user.username),
+                Pair("session_key", sessionKey),
+                Pair("group_id", groupId)
+            )
+            makeRequest(context, ENDPOINT_GROUP, params, response)
+        }
 
-    fun queryStatus(context: Context, user:User, sessionKey: String, response: Response?) {
-        val params = mutableMapOf(
-            Pair("action", "QUERY"),
-            Pair("username", user.username),
-            Pair("session_key", sessionKey),
-        )
-        makeRequest(context, ENDPOINT_GROUP, params, response)
-    }
+        fun queryStatus(context: Context, user:User, sessionKey: String, response: Response?) {
+            val params = mutableMapOf(
+                Pair("action", "QUERY"),
+                Pair("username", user.username),
+                Pair("session_key", sessionKey),
+            )
+            makeRequest(context, ENDPOINT_GROUP, params, response)
+        }
 
-    private fun makeRequest(context: Context, endPoint: String, params: MutableMap<String, String>, responseCallback: Response?) {
-        Volley.newRequestQueue(context)
-            .add(object: StringRequest(Request.Method.POST, API_BASE + endPoint, {
-                Log.d("Server Response", it)
-                responseCallback?.processResponse(JSONObject(it))
-            }, {}){
-                override fun getParams(): MutableMap<String, String> {
-                    return params;
-                }
-            })
-    }
+        private fun makeRequest(context: Context, endPoint: String, params: MutableMap<String, String>, responseCallback: Response?) {
+            Volley.newRequestQueue(context)
+                .add(object: StringRequest(Request.Method.POST, API_BASE + endPoint, {
+                    Log.d("Server Response", it)
+                    responseCallback?.processResponse(JSONObject(it))
+                }, {}){
+                    override fun getParams(): MutableMap<String, String> {
+                        return params;
+                    }
+                })
+        }
 
-    fun isSuccess(response: JSONObject): Boolean {
-        return response.getString("status").equals("SUCCESS")
-    }
+        fun isSuccess(response: JSONObject): Boolean {
+            return response.getString("status").equals("SUCCESS")
+        }
 
-    fun getErrorMessage(response: JSONObject): String {
-        return response.getString("message")
-    }
+        fun getErrorMessage(response: JSONObject): String {
+            return response.getString("message")
+        }
 
 }
 
