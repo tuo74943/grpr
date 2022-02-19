@@ -1,6 +1,7 @@
 package edu.temple.grpr
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.navigation.Navigation
+import com.google.firebase.messaging.FirebaseMessaging
 import org.json.JSONObject
 
 
@@ -46,7 +48,10 @@ class RegisterFragment : Fragment() {
                         if (Helper.api.isSuccess(response)) {
                             Helper.user.saveSessionData(requireContext(), response.getString("session_key"))
                             Helper.user.saveUser(requireContext(), User(username, firstname, lastname))
-                            goToDashboard()
+                            //Save FCM token and update it to the server
+                            FirebaseMessaging.getInstance().token.addOnCompleteListener{
+                                registerToken(it.result.toString())
+                            }
                         } else {
                             Toast.makeText(requireContext(), Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
                         }
@@ -61,5 +66,24 @@ class RegisterFragment : Fragment() {
     private fun goToDashboard(){
         Navigation.findNavController(layout)
             .navigate(R.id.action_registerFragment_to_dashboardFragment)
+    }
+
+    private fun registerToken(token : String){
+        // Get new FCM registration token
+        Log.d("user", Helper.user.get(requireContext()).username)
+        Log.d("session", Helper.user.getSessionKey(requireContext())!!)
+        Helper.api.updateWithFCM(requireContext(), Helper.user.get(requireContext()), Helper.user.getSessionKey(requireContext())!!, token, object : Helper.api.Response{
+            override fun processResponse(response: JSONObject) {
+                if(Helper.api.isSuccess(response)){
+                    Log.d("Token", response.toString())
+                    Helper.user.saveFCMToken(requireContext(), token)
+                }
+                else{
+                    Helper.api.getErrorMessage(response)
+                }
+                //updates current users token either way. then proceeds to dashboard
+                goToDashboard()
+            }
+        })
     }
 }

@@ -6,13 +6,20 @@ import com.google.firebase.messaging.RemoteMessage
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
     //on initial startup, FCM SDK generates a registration token for the client app instance.
-    //accessing this token by ovverriding this
-    override fun onNewToken(p0: String) {
-        super.onNewToken(p0)
-        Log.d("TOKEN", "Refreshed token: $p0")
+    //accessing this token by overriding this
+    override fun onNewToken(token: String) {
+        //get updated InstanceID token
+        Log.d("On New Token", "Refreshed token: $token")
+
+        sendRegistrationToServer(token)
     }
 
     override fun onMessageReceived(p0: RemoteMessage) {
         super.onMessageReceived(p0)
+    }
+
+    private fun sendRegistrationToServer(token: String){
+        Log.d("Sending registration to server", "but not really")
+        //TODO if the token is refreshed send this token to the server (API call to update)
     }
 }

@@ -58,6 +58,16 @@ class Helper {
             makeRequest(context, ENDPOINT_GROUP, params, response)
         }
 
+        fun updateWithFCM(context: Context, user: User, sessionKey: String, fcmToken: String, response: Response?){
+            val params = mutableMapOf(
+                Pair("action", "UPDATE"),
+                Pair("username", user.username),
+                Pair("session_key", sessionKey),
+                Pair("fcm_token", fcmToken)
+            )
+            makeRequest(context, ENDPOINT_USER, params, response)
+        }
+
         fun queryStatus(context: Context, user:User, sessionKey: String, response: Response?) {
             val params = mutableMapOf(
                 Pair("action", "QUERY"),
@@ -96,6 +106,7 @@ class Helper {
         private val KEY_FIRSTNAME = "firstname"
         private val KEY_LASTNAME = "lastname"
         private val KEY_GROUP_ID = "group_id"
+        private val KEY_FCMTOKEN = "fcm_token"
 
         fun saveSessionData(context: Context, sessionKey: String) {
             getSP(context).edit()
@@ -107,6 +118,16 @@ class Helper {
             getSP(context).edit()
                 .putString(KEY_GROUP_ID, groupId)
                 .apply()
+        }
+
+        fun saveFCMToken(context: Context, fcmToken: String){
+            getSP(context).edit()
+                .putString(KEY_FCMTOKEN, fcmToken)
+                .apply()
+        }
+
+        fun getFCMToken(context: Context): String? {
+            return getSP(context).getString(KEY_FCMTOKEN, null)
         }
 
         fun getGroupId(context: Context): String? {

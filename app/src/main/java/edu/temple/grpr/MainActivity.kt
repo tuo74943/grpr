@@ -118,11 +118,6 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
             .show()
     }
 
-    override fun joinGroup() {
-        Navigation.findNavController(findViewById(R.id.fragmentContainerView))
-            .navigate(R.id.action_dashboardFragment_to_groupFragment)
-    }
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if(requestCode == 123){

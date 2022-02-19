@@ -3,22 +3,16 @@ package edu.temple.grpr
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.*
-import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.OnMapReadyCallback
+import androidx.navigation.Navigation
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import org.json.JSONObject
 
 class DashboardFragment : Fragment(){
 
     lateinit var createFab : ExtendedFloatingActionButton
-
+    lateinit var layout : View
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Lets the system know that this fragment will contribute to the app menu!
@@ -30,7 +24,7 @@ class DashboardFragment : Fragment(){
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val layout =  inflater.inflate(R.layout.fragment_dashboard, container, false)
+        layout =  inflater.inflate(R.layout.fragment_dashboard, container, false)
         createFab = layout.findViewById(R.id.createFab)
 
         createFab.setOnClickListener{
@@ -42,7 +36,7 @@ class DashboardFragment : Fragment(){
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        //if group is active, change UI depending on that
         ViewModelProvider(requireActivity()).get(GrPrViewModel::class.java).getGroupId().observe(requireActivity()) {
             if(it.isNullOrEmpty()){
                 createFab.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#03DAC5"))
@@ -72,7 +66,9 @@ class DashboardFragment : Fragment(){
         }
 
         if(item.itemId == R.id.action_join_group) {
-            (activity as DashboardInterface).joinGroup()
+            Navigation.findNavController(layout)
+                .navigate(R.id.action_dashboardFragment_to_groupFragment)
+            return true
         }
 
         return false
@@ -82,7 +78,6 @@ class DashboardFragment : Fragment(){
         fun logout()
         fun createGroup()
         fun endGroup()
-        fun joinGroup()
     }
 
 }
