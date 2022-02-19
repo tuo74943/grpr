@@ -17,4 +17,6 @@
     <string name="register_and_login">Register and Login</string>
     <string name="grpr_registration">GRPR Registration</string>
     <string name="log_out">Log Out</string>
+    <string name="enter_group_code">Enter Group Code</string>
+    <string name="join_group">Join Group</string>
 </resources>

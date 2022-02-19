@@ -107,6 +107,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
                             grprViewModel.setGroupId("")
                             Helper.user.clearGroupId(this@MainActivity)
                             stopService(serviceIntent)
+                            Log.d("ENDGROUP", "Service stopped")
                         } else
                             Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
                     }
@@ -115,6 +116,11 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
             )}
             .setNegativeButton("Cancel") { p0, _ -> p0.cancel() }
             .show()
+    }
+
+    override fun joinGroup() {
+        Navigation.findNavController(findViewById(R.id.fragmentContainerView))
+            .navigate(R.id.action_dashboardFragment_to_groupFragment)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

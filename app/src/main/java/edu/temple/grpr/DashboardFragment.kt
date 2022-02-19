@@ -71,6 +71,10 @@ class DashboardFragment : Fragment(){
             return true
         }
 
+        if(item.itemId == R.id.action_join_group) {
+            (activity as DashboardInterface).joinGroup()
+        }
+
         return false
     }
 
@@ -78,6 +82,7 @@ class DashboardFragment : Fragment(){
         fun logout()
         fun createGroup()
         fun endGroup()
+        fun joinGroup()
     }
 
 }
