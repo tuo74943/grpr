@@ -58,6 +58,26 @@ class Helper {
             makeRequest(context, ENDPOINT_GROUP, params, response)
         }
 
+        fun joinGroup(context: Context, user: User, sessionKey: String, groupId: String, response: Response?){
+            val params = mutableMapOf(
+                Pair("action", "JOIN"),
+                Pair("username", user.username),
+                Pair("session_key", sessionKey),
+                Pair("group_id", groupId)
+            )
+            makeRequest(context, ENDPOINT_GROUP, params, response)
+        }
+
+        fun leaveGroup(context: Context, user: User, sessionKey: String, groupId: String, response: Response?){
+            val params = mutableMapOf(
+                Pair("action", "LEAVE"),
+                Pair("username", user.username),
+                Pair("session_key", sessionKey),
+                Pair("group_id", groupId)
+            )
+            makeRequest(context, ENDPOINT_GROUP, params, response)
+        }
+
         fun updateWithFCM(context: Context, user: User, sessionKey: String, fcmToken: String, response: Response?){
             val params = mutableMapOf(
                 Pair("action", "UPDATE"),
