@@ -72,7 +72,7 @@ class RegisterFragment : Fragment() {
         // Get new FCM registration token
         Log.d("user", Helper.user.get(requireContext()).username)
         Log.d("session", Helper.user.getSessionKey(requireContext())!!)
-        Helper.api.updateWithFCM(requireContext(), Helper.user.get(requireContext()), Helper.user.getSessionKey(requireContext())!!, token, object : Helper.api.Response{
+        Helper.api.updateFCM(requireContext(), Helper.user.get(requireContext()), Helper.user.getSessionKey(requireContext())!!, token, object : Helper.api.Response{
             override fun processResponse(response: JSONObject) {
                 if(Helper.api.isSuccess(response)){
                     Log.d("Token", response.toString())

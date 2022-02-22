@@ -67,6 +67,8 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 123)
         }
 
+
+
         bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE)
     }
 
@@ -116,6 +118,36 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
             )}
             .setNegativeButton("Cancel") { p0, _ -> p0.cancel() }
             .show()
+    }
+
+    override fun leaveGroup() {
+        AlertDialog.Builder(this).setTitle("Leave Group")
+            .setMessage("Are you sure you want to leave the group?")
+            .setPositiveButton("Yes"
+            ) { _, _ -> Helper.api.leaveGroup(
+                this,
+                Helper.user.get(this),
+                Helper.user.getSessionKey(this)!!,
+                grprViewModel.getGroupId().value!!,
+                object: Helper.api.Response {
+                    override fun processResponse(response: JSONObject) {
+                        if (Helper.api.isSuccess(response)) {
+                            //TODO remove true from joined argument
+                            Helper.user.clearGroupId(this@MainActivity)
+                            stopService(serviceIntent)
+                            Log.d("LEAVE GROUP", "Service stopped")
+                        } else
+                            Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
+                    }
+
+                }
+            )}
+            .setNegativeButton("Cancel") { p0, _ -> p0.cancel() }
+            .show()
+    }
+
+    override fun joinGroup() {
+        startService(serviceIntent)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

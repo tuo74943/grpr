@@ -13,7 +13,6 @@ class GrPrViewModel : ViewModel() {
     private val groupId by lazy {
         MutableLiveData<String>()
     }
-
     fun setGroupId(id: String) {
         groupId.value = id
     }
