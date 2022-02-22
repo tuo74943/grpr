@@ -39,7 +39,7 @@ class DashboardFragment : Fragment(){
             Helper.api.queryStatus(requireContext(), Helper.user.get(requireContext()), Helper.user.getSessionKey(requireContext())!!, object: Helper.api.Response {
                     override fun processResponse(response: JSONObject) {
                         Helper.api.closeGroup(requireContext(), Helper.user.get(requireContext()), Helper.user.getSessionKey(requireContext())!!, response.getString("group_id"), null)
-                        Log.d("Close", "closed current group")
+                        Log.d("CloseGroup", "closed current group")
                     }
                 })
             true
@@ -92,7 +92,7 @@ class DashboardFragment : Fragment(){
 
     private fun setFabButton(backgroundTint : String, text: Int, resourceId : Int, ocl : View.OnClickListener){
         createFab.backgroundTintList = ColorStateList.valueOf(Color.parseColor(backgroundTint))
-        createFab.text = requireContext().resources.getString(text)
+        createFab.text = resources.getString(text)
         createFab.setIconResource(resourceId)
         createFab.setOnClickListener(ocl)
     }

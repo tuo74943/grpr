@@ -3,6 +3,8 @@ package edu.temple.grpr
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.google.firebase.messaging.ktx.remoteMessage
+import org.json.JSONObject
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
     //on initial startup, FCM SDK generates a registration token for the client app instance.
@@ -14,8 +16,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         sendRegistrationToServer(token)
     }
 
-    override fun onMessageReceived(p0: RemoteMessage) {
-        super.onMessageReceived(p0)
+    override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        val message : JSONObject = JSONObject(remoteMessage.data.get("payload")!!)
+        Log.d("Payload", message.toString())
     }
 
     private fun sendRegistrationToServer(token: String){

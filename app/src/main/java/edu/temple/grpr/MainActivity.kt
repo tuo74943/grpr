@@ -24,11 +24,14 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
     val grprViewModel : GrPrViewModel by lazy {
         ViewModelProvider(this).get(GrPrViewModel::class.java)
     }
+    var isConnected = false
 
     //updates Viewmodel with location data whenever we recieve it from the locationservice
     var locationHandler = object : Handler(Looper.myLooper()!!) {
         override fun handleMessage(msg: Message) {
+            sendToFCM(msg.obj as LatLng)
             grprViewModel.setLocation(msg.obj as LatLng)
+//            Log.d("We still running?", "what")
         }
     }
 
@@ -37,9 +40,12 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
 
             // Provide service with handler
             (iBinder as LocationService.LocationBinder).setHandler(locationHandler)
+            isConnected = true
         }
 
-        override fun onServiceDisconnected(componentName: ComponentName) {}
+        override fun onServiceDisconnected(componentName: ComponentName) {
+            isConnected = false
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,9 +112,9 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
                 object: Helper.api.Response {
                     override fun processResponse(response: JSONObject) {
                         if (Helper.api.isSuccess(response)) {
+                            stopService(serviceIntent)
                             grprViewModel.setGroupId("")
                             Helper.user.clearGroupId(this@MainActivity)
-                            stopService(serviceIntent)
                             Log.d("ENDGROUP", "Service stopped")
                         } else
                             Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
@@ -168,5 +174,26 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
         Helper.user.clearSessionData(this)
         Navigation.findNavController(findViewById(R.id.fragmentContainerView))
             .navigate(R.id.action_dashboardFragment_to_loginFragment)
+    }
+
+    private fun sendToFCM(latLng: LatLng) {
+        if (!Helper.user.getGroupId(this).isNullOrEmpty()) {
+            Helper.api.updateGroup(
+                this,
+                Helper.user.get(this),
+                Helper.user.getSessionKey(this)!!,
+                Helper.user.getGroupId(this)!!,
+                latLng,
+                object : Helper.api.Response {
+                    override fun processResponse(response: JSONObject) {
+                        if (Helper.api.isSuccess(response)) {
+                            Log.v("Update Group", response.toString())
+                        } else {
+                            Log.d("Update Group", Helper.api.getErrorMessage(response))
+                        }
+                    }
+                })
+
+        }
     }
 }
