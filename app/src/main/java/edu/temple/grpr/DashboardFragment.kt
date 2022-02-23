@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.json.JSONObject
 
 class DashboardFragment : Fragment(){
@@ -18,6 +19,7 @@ class DashboardFragment : Fragment(){
     }
 
     lateinit var createFab : ExtendedFloatingActionButton
+    lateinit var joinFab : FloatingActionButton
     lateinit var layout : View
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +34,7 @@ class DashboardFragment : Fragment(){
         // Inflate the layout for this fragment
         layout =  inflater.inflate(R.layout.fragment_dashboard, container, false)
         createFab = layout.findViewById(R.id.createFab)
+        joinFab = layout.findViewById(R.id.joinFab)
 
         // Query the server for the current Group ID (if available)
         // and use it to close the group
@@ -49,23 +52,44 @@ class DashboardFragment : Fragment(){
             (activity as DashboardInterface).createGroup()
         }
 
+        joinFab.setOnClickListener{
+            Navigation.findNavController(layout)
+                .navigate(R.id.action_dashboardFragment_to_groupFragment)
+        }
+
         return layout
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //if the user joined a group, an argument is passed back from groupFrag. Set to false if it was never passed.
-        Log.d("status of joined", arguments?.getBoolean("joined", false).toString())
-
         //if group is active, change UI depending on that
         grPrViewModel.getGroupId().observe(requireActivity()) { groupId ->
-            if(groupId.isNullOrEmpty()){
-                setFabButton(getString(R.string.entrance_color), R.string.create, R.drawable.ic_baseline_group_add_24, { (activity as DashboardInterface).createGroup()})
-            }else{
-                setFabButton(getString(R.string.exit_color), R.string.end, android.R.drawable.ic_menu_close_clear_cancel, {(activity as DashboardInterface).endGroup()})
+            if(groupId.isNullOrEmpty()) {
+                setExtendedFabButton(
+                    getString(R.string.entrance_color),
+                    R.string.create,
+                    R.drawable.ic_baseline_group_add_24,
+                    { (activity as DashboardInterface).createGroup() })
+            }else {
+//                if(Helper.user.getCreatorStatus(requireContext()) == false)
+                    setExtendedFabButton(
+                        getString(R.string.exit_color),
+                        R.string.end,
+                        android.R.drawable.ic_menu_close_clear_cancel,
+                        { (activity as DashboardInterface).endGroup() })
             }
         }
+
+//        grPrViewModel.getCreatorStatus().observe(requireActivity()) { status ->
+//            if(status == true){
+//                setFabButton(getString(R.string.exit_color), R.drawable.ic_baseline_clear_24, {(activity as DashboardInterface).leaveGroup()})
+//            }
+//            else{
+//                setFabButton(getString(R.string.entrance_color), R.drawable.ic_baseline_group_add_24, {Navigation.findNavController(layout)
+//                    .navigate(R.id.action_dashboardFragment_to_groupFragment)})
+//            }
+//        }
     }
 
     // This fragment places a menu item in the app bar
@@ -81,20 +105,20 @@ class DashboardFragment : Fragment(){
             return true
         }
 
-        if(item.itemId == R.id.action_join_group) {
-            Navigation.findNavController(layout)
-                .navigate(R.id.action_dashboardFragment_to_groupFragment)
-            return true
-        }
-
         return false
     }
 
-    private fun setFabButton(backgroundTint : String, text: Int, resourceId : Int, ocl : View.OnClickListener){
+    private fun setExtendedFabButton(backgroundTint : String, text: Int, resourceId : Int, ocl : View.OnClickListener){
         createFab.backgroundTintList = ColorStateList.valueOf(Color.parseColor(backgroundTint))
         createFab.text = resources.getString(text)
         createFab.setIconResource(resourceId)
         createFab.setOnClickListener(ocl)
+    }
+
+    private fun setFabButton(backgroundTint: String, resourceId: Int, ocl : View.OnClickListener){
+        joinFab.backgroundTintList  = ColorStateList.valueOf(Color.parseColor(backgroundTint))
+        joinFab.setImageResource(resourceId)
+        joinFab.setOnClickListener(ocl)
     }
 
     interface DashboardInterface {
@@ -102,7 +126,6 @@ class DashboardFragment : Fragment(){
         fun createGroup()
         fun endGroup()
         fun leaveGroup()
-        fun joinGroup()
     }
 
 }

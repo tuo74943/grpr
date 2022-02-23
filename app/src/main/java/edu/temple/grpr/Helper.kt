@@ -140,6 +140,7 @@ class Helper {
         private val KEY_LASTNAME = "lastname"
         private val KEY_GROUP_ID = "group_id"
         private val KEY_FCMTOKEN = "fcm_token"
+        private val KEY_CREATOR = "is_creator"
 
         fun saveSessionData(context: Context, sessionKey: String) {
             getSP(context).edit()
@@ -159,8 +160,17 @@ class Helper {
                 .apply()
         }
 
+        fun setCreatorStatus(context: Context){
+            getSP(context).edit().putBoolean(KEY_CREATOR, true)
+                .apply()
+        }
+
         fun getFCMToken(context: Context): String? {
             return getSP(context).getString(KEY_FCMTOKEN, null)
+        }
+
+        fun getCreatorStatus(context: Context): Boolean {
+            return getSP(context).getBoolean(KEY_CREATOR, false)
         }
 
         fun getGroupId(context: Context): String? {
@@ -174,6 +184,11 @@ class Helper {
 
         fun clearSessionData(context: Context) {
             getSP(context).edit().remove(KEY_SESSION_KEY)
+                .apply()
+        }
+
+        fun clearCreatorStatus(context: Context){
+            getSP(context).edit().remove(KEY_CREATOR)
                 .apply()
         }
 

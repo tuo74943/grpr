@@ -16,7 +16,7 @@ import com.google.android.gms.maps.model.LatLng
 import org.json.JSONObject
 
 
-class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
+class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, GroupFragment.GroupInterface{
 
     val brTag = "com.example.broadcast.MY_NOTIFICATION"
     var serviceIntent : Intent? = null
@@ -92,10 +92,13 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
 
     override fun createGroup() {
         Log.d("Create","Button was pressed")
+        //lets the app know that the creator of the group is this person
+        Helper.user.setCreatorStatus(this)
         Helper.api.createGroup(this, Helper.user.get(this), Helper.user.getSessionKey(this)!!, object: Helper.api.Response {
             override fun processResponse(response: JSONObject) {
                 if (Helper.api.isSuccess(response)) {
                     grprViewModel.setGroupId(response.getString("group_id"))
+                    grprViewModel.setCreatorStatus(true)
                     Helper.user.saveGroupId(this@MainActivity, grprViewModel.getGroupId().value!!)
                     startLocationService()
                 } else {
@@ -119,7 +122,9 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
                         if (Helper.api.isSuccess(response)) {
                             stopLocationService()
                             grprViewModel.setGroupId("")
+                            grprViewModel.setCreatorStatus(false)
                             Helper.user.clearGroupId(this@MainActivity)
+                            Helper.user.clearCreatorStatus(this@MainActivity)
                             Log.d("ENDGROUP", "Service stopped")
                         } else
                             Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
@@ -143,10 +148,9 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
                 object: Helper.api.Response {
                     override fun processResponse(response: JSONObject) {
                         if (Helper.api.isSuccess(response)) {
-                            //TODO remove true from joined argument
+                            grprViewModel.setGroupId("")
                             Helper.user.clearGroupId(this@MainActivity)
                             stopLocationService()
-                            Log.d("LEAVE GROUP", "Service stopped")
                         } else
                             Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
                     }

@@ -14,7 +14,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import org.json.JSONObject
 
-class GroupFragment : Fragment() {
+class GroupFragment : Fragment(){
 
     lateinit var codeEditText : EditText
     lateinit var joinGroupButton : Button
@@ -38,6 +38,8 @@ class GroupFragment : Fragment() {
                 override fun processResponse(response: JSONObject) {
                     if(Helper.api.isSuccess(response)){
                         grPrViewModel.setGroupId(groupId)
+                        grPrViewModel.setCreatorStatus(false)
+                        (activity as GroupInterface).joinGroup()
                         goToDashBoard()
                     }
                     else{
@@ -50,8 +52,11 @@ class GroupFragment : Fragment() {
     }
 
     private fun goToDashBoard(){
-        val bundle = bundleOf("joined" to true)
         Navigation.findNavController(layout)
-            .navigate(R.id.action_groupFragment_to_dashboardFragment, bundle)
+            .navigate(R.id.action_groupFragment_to_dashboardFragment)
+    }
+
+    interface GroupInterface{
+        fun joinGroup()
     }
 }
