@@ -4,9 +4,7 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.content.pm.PackageManager
 import android.os.*
 import android.util.Log
@@ -20,18 +18,20 @@ import org.json.JSONObject
 
 class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
 
+    val brTag = "com.example.broadcast.MY_NOTIFICATION"
     var serviceIntent : Intent? = null
     val grprViewModel : GrPrViewModel by lazy {
         ViewModelProvider(this).get(GrPrViewModel::class.java)
     }
     var isConnected = false
 
+    lateinit var br : BroadcastReceiver
+
     //updates Viewmodel with location data whenever we recieve it from the locationservice
     var locationHandler = object : Handler(Looper.myLooper()!!) {
         override fun handleMessage(msg: Message) {
             sendToFCM(msg.obj as LatLng)
             grprViewModel.setLocation(msg.obj as LatLng)
-//            Log.d("We still running?", "what")
         }
     }
 
@@ -68,14 +68,19 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
             startLocationService()
         }
 
+        val filter = IntentFilter()
+        filter.addAction(brTag)
+        br = object : BroadcastReceiver(){
+            override fun onReceive(p0: Context?, p1: Intent?) {
+                Log.d("RECEIVER", p1?.getStringExtra("payload")!!)
+            }
+
+        }
+        registerReceiver(br, filter)
 
         if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 123)
         }
-
-
-
-        bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE)
     }
 
     private fun createNotificationChannel() {
@@ -112,7 +117,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
                 object: Helper.api.Response {
                     override fun processResponse(response: JSONObject) {
                         if (Helper.api.isSuccess(response)) {
-                            stopService(serviceIntent)
+                            stopLocationService()
                             grprViewModel.setGroupId("")
                             Helper.user.clearGroupId(this@MainActivity)
                             Log.d("ENDGROUP", "Service stopped")
@@ -140,7 +145,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
                         if (Helper.api.isSuccess(response)) {
                             //TODO remove true from joined argument
                             Helper.user.clearGroupId(this@MainActivity)
-                            stopService(serviceIntent)
+                            stopLocationService()
                             Log.d("LEAVE GROUP", "Service stopped")
                         } else
                             Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
@@ -153,7 +158,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
     }
 
     override fun joinGroup() {
-        startService(serviceIntent)
+        startLocationService()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -167,7 +172,13 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
     }
 
     private fun startLocationService(){
+        bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE)
         startService(serviceIntent)
+    }
+
+    private fun stopLocationService(){
+        unbindService(serviceConnection)
+        stopService(serviceIntent)
     }
 
     override fun logout() {
@@ -175,6 +186,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
         Navigation.findNavController(findViewById(R.id.fragmentContainerView))
             .navigate(R.id.action_dashboardFragment_to_loginFragment)
     }
+
 
     private fun sendToFCM(latLng: LatLng) {
         if (!Helper.user.getGroupId(this).isNullOrEmpty()) {
@@ -195,5 +207,11 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface{
                 })
 
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(br)
+        Log.d("reciever", "killed")
     }
 }

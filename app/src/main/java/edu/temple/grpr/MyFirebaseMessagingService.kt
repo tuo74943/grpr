@@ -1,6 +1,8 @@
 package edu.temple.grpr
 
+import android.content.Intent
 import android.util.Log
+import androidx.core.os.bundleOf
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.firebase.messaging.ktx.remoteMessage
@@ -17,12 +19,19 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        val message : JSONObject = JSONObject(remoteMessage.data.get("payload")!!)
-        Log.d("Payload", message.toString())
+        val message : String = (remoteMessage.data.get("payload")!!)
+//        Log.d("Payload", message.toString())
+        Intent().also { intent ->
+            intent.setAction("com.example.broadcast.MY_NOTIFICATION")
+            intent.putExtra("payload", message)
+            sendBroadcast(intent)
+        }
+
     }
 
     private fun sendRegistrationToServer(token: String){
-        Log.d("Sending registration to server", "but not really")
-        //TODO if the token is refreshed send this token to the server (API call to update)
+        if(!Helper.user.getSessionKey(this).isNullOrEmpty()){
+            Helper.api.updateFCM(this, Helper.user.get(this), Helper.user.getSessionKey(this)!!, token, null)
+        }
     }
 }
