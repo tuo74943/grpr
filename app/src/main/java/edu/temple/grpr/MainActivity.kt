@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import org.json.JSONArray
 import org.json.JSONObject
 
 
@@ -24,6 +26,8 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
         ViewModelProvider(this).get(GrPrViewModel::class.java)
     }
     var isConnected = false
+
+    lateinit var currentGroup : Group
 
     lateinit var br : BroadcastReceiver
 
@@ -72,7 +76,23 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
         filter.addAction(brTag)
         br = object : BroadcastReceiver(){
             override fun onReceive(p0: Context?, p1: Intent?) {
-                Log.d("RECEIVER", p1?.getStringExtra("payload")!!)
+                val message = p1?.getStringExtra("payload")
+                Log.d("RECEIVER", message.toString())
+
+//                Log.d("action", JSONObject(message).getString("action"))
+                val action = JSONObject(message).getString("action")
+                val data = JSONArray(JSONObject(message).getString("data"))
+                if(action == "UPDATE"){
+//                    currentGroup.replaceParticipants(data)
+//                    val mapFragment = (supportFragmentManager.primaryNavigationFragment as MapsFragment).updateMap(currentGroup)
+                }
+                else{
+                    if(!Helper.user.getCreatorStatus(this@MainActivity)) {
+                        //leave group
+                        //notify user
+                        //update UI
+                    }
+                }
             }
 
         }
@@ -82,6 +102,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 123)
         }
     }
+
 
     private fun createNotificationChannel() {
         val channel =

@@ -44,7 +44,14 @@ class MapsFragment : Fragment() {
                 if (myMarker == null) myMarker = map.addMarker(
                     MarkerOptions().position(it)
                 ) else myMarker?.setPosition(it)
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 17f))
             }
+    }
+
+    fun updateMap(group : Group){
+        val list = group.getParticipants()
+        for(i in 0 until list.size){
+            if(!(list[i].username == Helper.user.get(requireContext()).username))
+                map.addMarker(MarkerOptions().title(list[i].username).position(list[i].latLng))
+        }
     }
 }
