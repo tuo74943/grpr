@@ -21,6 +21,7 @@ class DashboardFragment : Fragment(){
     lateinit var createFab : ExtendedFloatingActionButton
     lateinit var joinFab : FloatingActionButton
     lateinit var layout : View
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Lets the system know that this fragment will contribute to the app menu!
@@ -96,15 +97,35 @@ class DashboardFragment : Fragment(){
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.dashboard, menu)
+
+        menu.findItem(R.id.action_join_group).isVisible = Helper.user.getGroupId(requireContext()).isNullOrBlank()
+        menu.findItem(R.id.action_leave_group).isVisible = Helper.user.getGroupId(requireContext()).isNullOrBlank()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
+<<<<<<< Updated upstream
         if (item.itemId == R.id.action_logout) {
             (activity as DashboardInterface).logout()
             return true
         }
 
+=======
+        when (item.itemId){
+            R.id.action_logout -> {
+                (activity as DashboardInterface).logout()
+                return true
+            }
+            R.id.action_join_group -> {
+                (activity as DashboardInterface).joinGroup()
+                return true
+            }
+            R.id.action_leave_group -> {
+                (activity as DashboardInterface).leaveGroup()
+                return true
+            }
+        }
+>>>>>>> Stashed changes
         return false
     }
 

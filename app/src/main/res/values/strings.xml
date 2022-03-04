@@ -23,4 +23,5 @@
     <string name="exit_color">#e91e63</string>
     <string name="entrance_color">#03DAC5</string>
     <string name="end">end</string>
+    <string name="leave_group">Leave Group</string>
 </resources>
