@@ -43,11 +43,14 @@ class LocationService : Service() {
         // user location updates to connected client
         locationManager = getSystemService(LocationManager::class.java)
         locationListener = LocationListener { location: Location ->
+            val latLng = LatLng(location.latitude, location.longitude)
             if (handler != null) {
                 val msg : Message = Message.obtain()
-                msg.obj = LatLng(location.latitude, location.longitude)
+                msg.obj = latLng
                 handler!!.sendMessage(msg)
             }
+
+            Helper.api.updateGroup(this, Helper.user.get(this), Helper.user.getSessionKey(this)!!, latLng, null)
         }
 
         // Notification for Foreground Service

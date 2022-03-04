@@ -3,6 +3,7 @@ package edu.temple.grpr
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,17 +13,21 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 
 class MapsFragment : Fragment() {
 
     lateinit var map: GoogleMap
+    lateinit var grprViewModel: GrPrViewModel
     var myMarker: Marker? = null
 
     private val callback = OnMapReadyCallback { googleMap ->
         map = googleMap
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        grprViewModel = ViewModelProvider(requireActivity()).get(GrPrViewModel::class.java)
     }
 
     override fun onCreateView(
@@ -39,19 +44,39 @@ class MapsFragment : Fragment() {
         mapFragment?.getMapAsync(callback)
 
         // Update location on map whenever ViewModel is updated
-        ViewModelProvider(requireActivity()).get(GrPrViewModel::class.java).getLocation()
+        grprViewModel.getLocation()
             ?.observe(requireActivity()) {
                 if (myMarker == null) myMarker = map.addMarker(
                     MarkerOptions().position(it)
                 ) else myMarker?.setPosition(it)
             }
-    }
 
-    fun updateMap(group : Group){
-        val list = group.getParticipants()
-        for(i in 0 until list.size){
-            if(!(list[i].username == Helper.user.get(requireContext()).username))
-                map.addMarker(MarkerOptions().title(list[i].username).position(list[i].latLng))
-        }
+        // Add/update participants on map whenever ViewModel is updated
+        grprViewModel.getGroupToObserve()
+            .observe(requireActivity()) {
+                Log.d("Observing", "ASD")
+                val group = grprViewModel.getGroup()
+                var participant: Participant
+                val boundBuilder = LatLngBounds.Builder()
+                for (i in 0 until group.size) {
+                    participant = group.getParticipant(i)
+
+                    //Filter out own marker from map, but include in BoundedBox
+                    if (participant.username != Helper.user.get(requireContext()).username) {
+                        if (participant.marker == null)
+                            participant.marker = map.addMarker(
+                                MarkerOptions().position(participant.latLng)
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.outline_person_pin_circle_black_48))
+                                    .title(participant.username)
+                            )!!
+                        else
+                            participant.marker?.position = participant.latLng
+                    }
+
+                    boundBuilder.include(participant.latLng)
+                }
+                if (group.size > 0)
+                    map.animateCamera(CameraUpdateFactory.newLatLngBounds(boundBuilder.build(), 150))
+            }
     }
 }

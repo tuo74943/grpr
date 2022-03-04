@@ -16,47 +16,43 @@ import org.json.JSONObject
 
 class GroupFragment : Fragment(){
 
-    lateinit var codeEditText : EditText
-    lateinit var joinGroupButton : Button
-    lateinit var layout : View
-    val grPrViewModel: GrPrViewModel by lazy {
-        ViewModelProvider(requireActivity()).get(GrPrViewModel::class.java)
-    }
+    var joining = false
 
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        joining = arguments?.getBoolean("JOIN_ACTION")!!
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        layout =  inflater.inflate(R.layout.fragment_group, container, false)
-        codeEditText = layout.findViewById(R.id.codeEditText)
-        joinGroupButton = layout.findViewById(R.id.joinGroupButton)
+        val layout =  inflater.inflate(R.layout.fragment_group, container, false)
+        val codeEditText = layout.findViewById<EditText>(R.id.codeEditText)
+        val joinGroupButton = layout.findViewById<Button>(R.id.joinGroupButton)
+        val leaveGroupButton = layout.findViewById<Button>(R.id.leaveGroupButton)
+
+        codeEditText.visibility = if (joining) View.VISIBLE else View.INVISIBLE
+        joinGroupButton.visibility = if (joining) View.VISIBLE else View.INVISIBLE
+        leaveGroupButton.visibility = if (joining) View.INVISIBLE else View.VISIBLE
+
 
         joinGroupButton.setOnClickListener{
-            val groupId = codeEditText.text.toString()
-            Helper.api.joinGroup(requireContext(), Helper.user.get(requireContext()), Helper.user.getSessionKey(requireContext())!!, groupId, object : Helper.api.Response{
-                override fun processResponse(response: JSONObject) {
-                    if(Helper.api.isSuccess(response)){
-                        grPrViewModel.setGroupId(groupId)
-                        grPrViewModel.setCreatorStatus(false)
-                        (activity as GroupInterface).joinGroup()
-                        goToDashBoard()
-                    }
-                    else{
-                        Toast.makeText(requireContext(),Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
-                    }
-                }
-            })
+            (activity as GroupControlInterface).joinGroupFlow(codeEditText.text.toString())
+            Navigation.findNavController(layout).popBackStack()
+        }
+
+        leaveGroupButton.setOnClickListener{
+            (activity as GroupControlInterface).leaveGroupFlow(Helper.user.getGroupId(requireContext())!!)
+            Navigation.findNavController(layout).popBackStack()
         }
         return layout
     }
 
-    private fun goToDashBoard(){
-        Navigation.findNavController(layout)
-            .navigate(R.id.action_groupFragment_to_dashboardFragment)
-    }
-
-    interface GroupInterface{
-        fun joinGroup()
+    interface GroupControlInterface{
+        fun joinGroupFlow(groupId : String)
+        fun leaveGroupFlow(groupId: String)
     }
 }

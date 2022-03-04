@@ -18,25 +18,43 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 
-class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, GroupFragment.GroupInterface{
+class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, GroupFragment.GroupControlInterface{
 
-    val brTag = "com.example.broadcast.MY_NOTIFICATION"
     var serviceIntent : Intent? = null
     val grprViewModel : GrPrViewModel by lazy {
         ViewModelProvider(this).get(GrPrViewModel::class.java)
     }
+
     var isConnected = false
-
-    lateinit var currentGroup : Group
-
-    lateinit var br : BroadcastReceiver
 
     //updates Viewmodel with location data whenever we recieve it from the locationservice
     var locationHandler = object : Handler(Looper.myLooper()!!) {
         override fun handleMessage(msg: Message) {
-            sendToFCM(msg.obj as LatLng)
             grprViewModel.setLocation(msg.obj as LatLng)
         }
+    }
+
+    private val groupBroadCastReceiver = object : BroadcastReceiver(){
+        override fun onReceive(p0: Context?, p1: Intent?) {
+            val participantArray = JSONArray(p1!!.getStringExtra(MyFirebaseMessagingService.UPDATE_KEY))
+            val group = Group()
+            var participantObject : JSONObject
+            for (i in 0 until participantArray.length()) {
+                participantObject = participantArray.getJSONObject(i)
+                group.addParticipant(
+                    Participant(
+                        participantObject.getString("username"),
+                        LatLng(
+                            participantObject.getDouble("latitude"),
+                            participantObject.getDouble("longitude")
+                        )
+                    )
+                )
+            }
+
+            grprViewModel.setGroup(group)
+        }
+
     }
 
     var serviceConnection: ServiceConnection = object : ServiceConnection {
@@ -72,37 +90,20 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
             startLocationService()
         }
 
-        val filter = IntentFilter()
-        filter.addAction(brTag)
-        br = object : BroadcastReceiver(){
-            override fun onReceive(p0: Context?, p1: Intent?) {
-                val message = p1?.getStringExtra("payload")
-                Log.d("RECEIVER", message.toString())
-
-//                Log.d("action", JSONObject(message).getString("action"))
-                val action = JSONObject(message).getString("action")
-                val data = JSONArray(JSONObject(message).getString("data"))
-                if(action == "UPDATE"){
-//                    currentGroup.replaceParticipants(data)
-//                    val mapFragment = (supportFragmentManager.primaryNavigationFragment as MapsFragment).updateMap(currentGroup)
-                }
-                else{
-                    if(!Helper.user.getCreatorStatus(this@MainActivity)) {
-                        //leave group
-                        //notify user
-                        //update UI
-                    }
-                }
-            }
-
-        }
-        registerReceiver(br, filter)
-
         if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 123)
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        registerReceiver(groupBroadCastReceiver, IntentFilter(MyFirebaseMessagingService.UPDATE_ACTION))
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(groupBroadCastReceiver)
+    }
 
     private fun createNotificationChannel() {
         val channel =
@@ -112,14 +113,10 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
     }
 
     override fun createGroup() {
-        Log.d("Create","Button was pressed")
-        //lets the app know that the creator of the group is this person
-        Helper.user.setCreatorStatus(this)
         Helper.api.createGroup(this, Helper.user.get(this), Helper.user.getSessionKey(this)!!, object: Helper.api.Response {
             override fun processResponse(response: JSONObject) {
                 if (Helper.api.isSuccess(response)) {
                     grprViewModel.setGroupId(response.getString("group_id"))
-                    grprViewModel.setCreatorStatus(true)
                     Helper.user.saveGroupId(this@MainActivity, grprViewModel.getGroupId().value!!)
                     startLocationService()
                 } else {
@@ -141,12 +138,9 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
                 object: Helper.api.Response {
                     override fun processResponse(response: JSONObject) {
                         if (Helper.api.isSuccess(response)) {
-                            stopLocationService()
                             grprViewModel.setGroupId("")
-                            grprViewModel.setCreatorStatus(false)
                             Helper.user.clearGroupId(this@MainActivity)
-                            Helper.user.clearCreatorStatus(this@MainActivity)
-                            Log.d("ENDGROUP", "Service stopped")
+                            stopLocationService()
                         } else
                             Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
                     }
@@ -155,45 +149,25 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
             )}
             .setNegativeButton("Cancel") { p0, _ -> p0.cancel() }
             .show()
+    }
+    override fun joinGroup() {
+        Navigation.findNavController(findViewById(R.id.fragmentContainerView))
+            .navigate(R.id.action_dashboardFragment_to_groupFragment, Bundle().apply {
+                putBoolean("JOIN_ACTION", true)
+            })
     }
 
     override fun leaveGroup() {
-        AlertDialog.Builder(this).setTitle("Leave Group")
-            .setMessage("Are you sure you want to leave the group?")
-            .setPositiveButton("Yes"
-            ) { _, _ -> Helper.api.leaveGroup(
-                this,
-                Helper.user.get(this),
-                Helper.user.getSessionKey(this)!!,
-                grprViewModel.getGroupId().value!!,
-                object: Helper.api.Response {
-                    override fun processResponse(response: JSONObject) {
-                        if (Helper.api.isSuccess(response)) {
-                            grprViewModel.setGroupId("")
-                            Helper.user.clearGroupId(this@MainActivity)
-                            stopLocationService()
-                        } else
-                            Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
-                    }
-
-                }
-            )}
-            .setNegativeButton("Cancel") { p0, _ -> p0.cancel() }
-            .show()
+        Navigation.findNavController(findViewById(R.id.fragmentContainerView))
+            .navigate(R.id.action_dashboardFragment_to_groupFragment, Bundle().apply {
+                putBoolean("JOIN_ACTION", false)
+            })
     }
 
-    override fun joinGroup() {
-        startLocationService()
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if(requestCode == 123){
-            if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                //if permissions were not granted we close the app
-                finish()
-            }
-        }
+    override fun logout() {
+        Helper.user.clearSessionData(this)
+        Navigation.findNavController(findViewById(R.id.fragmentContainerView))
+            .navigate(R.id.action_dashboardFragment_to_loginFragment)
     }
 
     private fun startLocationService(){
@@ -206,37 +180,50 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
         stopService(serviceIntent)
     }
 
-    override fun logout() {
-        Helper.user.clearSessionData(this)
-        Navigation.findNavController(findViewById(R.id.fragmentContainerView))
-            .navigate(R.id.action_dashboardFragment_to_loginFragment)
+    override fun joinGroupFlow(groupId: String) {
+        Helper.api.joinGroup(
+            this,
+            Helper.user.get(this),
+            Helper.user.getSessionKey(this)!!,
+            groupId,
+            object: Helper.api.Response {
+                override fun processResponse(response: JSONObject) {
+                    Helper.user.saveGroupId(this@MainActivity, groupId)
+                    startLocationService()
+                    // Refresh action bar menu items
+                    invalidateOptionsMenu()
+                }
+
+            }
+        )
     }
 
+    override fun leaveGroupFlow(groupId: String) {
+        Helper.api.leaveGroup(
+            this,
+            Helper.user.get(this),
+            Helper.user.getSessionKey(this)!!,
+            Helper.user.getGroupId(this)!!,
+            object: Helper.api.Response {
+                override fun processResponse(response: JSONObject) {
+                    Helper.user.clearGroupId(this@MainActivity)
+                    stopLocationService()
 
-    private fun sendToFCM(latLng: LatLng) {
-        if (!Helper.user.getGroupId(this).isNullOrEmpty()) {
-            Helper.api.updateGroup(
-                this,
-                Helper.user.get(this),
-                Helper.user.getSessionKey(this)!!,
-                Helper.user.getGroupId(this)!!,
-                latLng,
-                object : Helper.api.Response {
-                    override fun processResponse(response: JSONObject) {
-                        if (Helper.api.isSuccess(response)) {
-                            Log.v("Update Group", response.toString())
-                        } else {
-                            Log.d("Update Group", Helper.api.getErrorMessage(response))
-                        }
-                    }
-                })
+                    // Refresh action bar menu items
+                    invalidateOptionsMenu()
+                }
 
+            }
+        )
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(requestCode == 123){
+            if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                //if permissions were not granted we close the app
+                finish()
+            }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        unregisterReceiver(br)
-        Log.d("reciever", "killed")
     }
 }

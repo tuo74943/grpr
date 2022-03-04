@@ -3,8 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-<<<<<<< Updated upstream
-=======
         android:id="@+id/action_join_group"
         android:icon="@drawable/ic_baseline_group_add_24"
         android:title="@string/join_group"
@@ -15,9 +13,8 @@
         android:title="@string/leave_group"
         app:showAsAction="ifRoom" />
     <item
->>>>>>> Stashed changes
         android:id="@+id/action_logout"
         android:icon="@drawable/outline_logout_white_24"
         android:title="@string/log_out"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 </menu>

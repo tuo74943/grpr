@@ -1,31 +1,34 @@
 package edu.temple.grpr
 
-import androidx.lifecycle.ViewModel
-import com.google.android.gms.maps.model.LatLng
-import org.json.JSONArray
+class Group() {
 
-class Group {
+    private val participants = ArrayList<Participant>()
 
-    private val pList : MutableList<Participant> by lazy {
-        ArrayList()
-    }
+    val size : Int get() = participants.size
 
-    fun replaceParticipants(jsonArray: JSONArray){
-        pList.clear()
-        for(i in 0 until jsonArray.length()){
-            val username =jsonArray.getJSONObject(i).getString("username")
-            val firstname = jsonArray.getJSONObject(i).getString("firstname")
-            val lastname = jsonArray.getJSONObject(i).getString("lastname")
-            val latitude = jsonArray.getJSONObject(i).getDouble("latitude")
-            val longitude = jsonArray.getJSONObject(i).getDouble("longitude")
+    fun updateGroup(group: Group){
+        //remove missing participants
+        participants.forEach {
+            if (!group.participants.contains(it)) {
+                participants.remove(it)
+                it.removeMarker()
+            }
+        }
 
-            pList.add(Participant(username, firstname, lastname, LatLng(latitude, longitude)))
+        group.participants.forEach{
+            if (!participants.contains(it)){
+                participants.add(it)
+            } else{
+                participants[participants.indexOf(it)].latLng = it.latLng
+            }
         }
     }
 
-    fun getParticipants() : MutableList<Participant>{
-        return pList
+    fun getParticipant(index : Int) :Participant{
+        return participants[index]
     }
 
-    fun size() = pList.size
+    fun addParticipant(participant: Participant) {
+        participants.add(participant)
+    }
 }

@@ -1,9 +1,9 @@
 package edu.temple.grpr
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.maps.model.LatLng
@@ -11,10 +11,10 @@ import org.json.JSONObject
 
 class Helper {
     object api {
-        val ENDPOINT_GROUP = "group.php"
-        val ENDPOINT_USER = "account.php"
+        const val ENDPOINT_GROUP = "group.php"
+        const val ENDPOINT_USER = "account.php"
 
-        val API_BASE = "https://kamorris.com/lab/grpr/"
+        const val API_BASE = "https://kamorris.com/lab/grpr/"
 
         interface Response {
             fun processResponse(response: JSONObject)
@@ -89,12 +89,12 @@ class Helper {
             makeRequest(context, ENDPOINT_USER, params, response)
         }
 
-        fun updateGroup(context: Context, user: User, sessionKey: String, groupId: String, latLng: LatLng, response: Response?){
+        fun updateGroup(context: Context, user: User, sessionKey: String, latLng: LatLng, response: Response?){
             val params = mutableMapOf(
                 Pair("action", "UPDATE"),
                 Pair("username", user.username),
                 Pair("session_key", sessionKey),
-                Pair("group_id", groupId),
+                Pair("group_id", Helper.user.getGroupId(context)!!),
                 Pair("latitude", latLng.latitude.toString()),
                 Pair("longitude", latLng.longitude.toString())
             )
@@ -112,12 +112,12 @@ class Helper {
 
         private fun makeRequest(context: Context, endPoint: String, params: MutableMap<String, String>, responseCallback: Response?) {
             Volley.newRequestQueue(context)
-                .add(object: StringRequest(Request.Method.POST, API_BASE + endPoint, {
+                .add(object: StringRequest(Method.POST, API_BASE + endPoint, {
                     Log.d("Server Response", it)
                     responseCallback?.processResponse(JSONObject(it))
                 }, {}){
                     override fun getParams(): MutableMap<String, String> {
-                        return params;
+                        return params
                     }
                 })
         }
@@ -133,14 +133,13 @@ class Helper {
 }
 
     object user {
-        private val SHARED_PREFERENCES_FILE = "shared_prefs"
-        private val KEY_SESSION_KEY = "session_key"
-        private val KEY_USERNAME = "username"
-        private val KEY_FIRSTNAME = "firstname"
-        private val KEY_LASTNAME = "lastname"
-        private val KEY_GROUP_ID = "group_id"
-        private val KEY_FCMTOKEN = "fcm_token"
-        private val KEY_CREATOR = "is_creator"
+        private const val SHARED_PREFERENCES_FILE = "shared_prefs"
+        private const val KEY_SESSION_KEY = "session_key"
+        private const val KEY_USERNAME = "username"
+        private const val KEY_FIRSTNAME = "firstname"
+        private const val KEY_LASTNAME = "lastname"
+        private const val KEY_GROUP_ID = "group_id"
+        private const val KEY_FCMTOKEN = "fcm_token"
 
         fun saveSessionData(context: Context, sessionKey: String) {
             getSP(context).edit()
@@ -160,18 +159,17 @@ class Helper {
                 .apply()
         }
 
-        fun setCreatorStatus(context: Context){
-            getSP(context).edit().putBoolean(KEY_CREATOR, true)
-                .apply()
+        @SuppressLint("ApplySharedPref")
+        fun clearFCMToken(context: Context){
+            getSP(context).edit()
+                .remove(KEY_FCMTOKEN)
+                .commit()
         }
 
         fun getFCMToken(context: Context): String? {
             return getSP(context).getString(KEY_FCMTOKEN, null)
         }
 
-        fun getCreatorStatus(context: Context): Boolean {
-            return getSP(context).getBoolean(KEY_CREATOR, false)
-        }
 
         fun getGroupId(context: Context): String? {
             return getSP(context).getString(KEY_GROUP_ID, null)
@@ -184,11 +182,6 @@ class Helper {
 
         fun clearSessionData(context: Context) {
             getSP(context).edit().remove(KEY_SESSION_KEY)
-                .apply()
-        }
-
-        fun clearCreatorStatus(context: Context){
-            getSP(context).edit().remove(KEY_CREATOR)
                 .apply()
         }
 
@@ -213,6 +206,22 @@ class Helper {
         }
         private fun getSP (context: Context) : SharedPreferences {
             return context.getSharedPreferences(SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE)
+        }
+        fun registerTokenFlow(context: Context, token: String) {
+            if (getFCMToken(context).isNullOrEmpty() && getSessionKey(context) != null) {
+                api.updateFCM(
+                    context,
+                    get(context),
+                    getSessionKey(context)!!,
+                    token,
+                    object: api.Response {
+                        override fun processResponse(response: JSONObject) {
+                            saveFCMToken(context, token)
+                        }
+
+                    }
+                )
+            }
         }
     }
 }

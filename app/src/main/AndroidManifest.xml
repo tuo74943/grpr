@@ -21,11 +21,13 @@
 
         <service
             android:name=".LocationService"
-            android:foregroundServiceType="location" />
+            android:enabled="true"
+            android:exported="false"/>
 
         <service
             android:name=".MyFirebaseMessagingService"
-            android:exported="false">
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
             </intent-filter>

@@ -1,5 +1,6 @@
 package edu.temple.grpr
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -45,9 +46,8 @@ class LoginFragment : Fragment() {
                             null
                         ))
                         //Save FCM token and update it to the server
-                        FirebaseMessaging.getInstance().token.addOnCompleteListener{
-                            registerToken(it.result.toString())
-                        }
+                        registerTokenWithAppServer(requireContext())
+                        goToDashboard()
                     } else {
                         Toast.makeText(requireContext(), Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
                     }
@@ -62,6 +62,7 @@ class LoginFragment : Fragment() {
 
         //if user has a session key then that means the user is already logged in
         Helper.user.getSessionKey(requireContext())?.run {
+            registerTokenWithAppServer(requireContext())
             goToDashboard()
         }
     }
@@ -72,22 +73,10 @@ class LoginFragment : Fragment() {
             .navigate(R.id.action_loginFragment_to_dashboardFragment)
     }
 
-    private fun registerToken(token : String){
-        // Get new FCM registration token
-        Log.d("user", Helper.user.get(requireContext()).username)
-        Log.d("session", Helper.user.getSessionKey(requireContext())!!)
-        Helper.api.updateFCM(requireContext(), Helper.user.get(requireContext()), Helper.user.getSessionKey(requireContext())!!, token, object : Helper.api.Response{
-            override fun processResponse(response: JSONObject) {
-                if(Helper.api.isSuccess(response)){
-                    Log.d("Token", response.toString())
-                    Helper.user.saveFCMToken(requireContext(), token)
-                }
-                else{
-                    Helper.api.getErrorMessage(response)
-                }
-                //if token is the same
-                goToDashboard()
-            }
-        })
+    private fun registerTokenWithAppServer(context: Context){
+        FirebaseMessaging.getInstance()
+            .token.addOnSuccessListener{
+            Helper.user.registerTokenFlow(context, it)
+        }
     }
 }

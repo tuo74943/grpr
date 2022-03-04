@@ -6,6 +6,11 @@ import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 
 class GrPrViewModel : ViewModel() {
+
+    private val participants by lazy{
+        Group()
+    }
+
     private val location by lazy {
         MutableLiveData<LatLng>()
     }
@@ -14,8 +19,8 @@ class GrPrViewModel : ViewModel() {
         MutableLiveData<String>()
     }
 
-    private val isCreator by lazy {
-        MutableLiveData<Boolean>()
+    private val group by lazy{
+        MutableLiveData<Group>()
     }
 
     fun setGroupId(id: String) {
@@ -26,10 +31,6 @@ class GrPrViewModel : ViewModel() {
         location.value = latLng
     }
 
-    fun setCreatorStatus(status : Boolean){
-        isCreator.value = status
-    }
-
     fun getLocation(): LiveData<LatLng> {
         return location
     }
@@ -38,7 +39,20 @@ class GrPrViewModel : ViewModel() {
         return groupId
     }
 
-    fun getCreatorStatus(): LiveData<Boolean>{
-        return isCreator
+    fun setGroup(group : Group){
+        participants.updateGroup(group)
+
+        //inform observers that we have provided them with a new group
+        this.group.value = group
+    }
+
+    //livedata to observe
+    fun getGroupToObserve() : LiveData<Group>{
+        return group
+    }
+
+    //actual data
+    fun getGroup(): Group{
+        return participants
     }
 }

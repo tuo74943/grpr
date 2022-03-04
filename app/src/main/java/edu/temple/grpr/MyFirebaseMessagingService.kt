@@ -9,29 +9,27 @@ import com.google.firebase.messaging.ktx.remoteMessage
 import org.json.JSONObject
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
+
+    companion object {
+        val UPDATE_ACTION = "grpr_action_update"
+        val UPDATE_KEY = "grpr_update_key"
+    }
+
     //on initial startup, FCM SDK generates a registration token for the client app instance.
     //accessing this token by overriding this
     override fun onNewToken(token: String) {
-        //get updated InstanceID token
-        Log.d("On New Token", "Refreshed token: $token")
-
-        sendRegistrationToServer(token)
+        Helper.user.clearFCMToken(this)
+        Helper.user.registerTokenFlow(this, token)
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        val message : String = (remoteMessage.data.get("payload")!!)
-//        Log.d("Payload", message.toString())
-        Intent().also { intent ->
-            intent.setAction("com.example.broadcast.MY_NOTIFICATION")
-            intent.putExtra("payload", message)
-            sendBroadcast(intent)
-        }
+        Log.d("FCM Message", remoteMessage.data["payload"].toString())
+        val message = JSONObject(remoteMessage.data["payload"].toString())
 
-    }
-
-    private fun sendRegistrationToServer(token: String){
-        if(!Helper.user.getSessionKey(this).isNullOrEmpty()){
-            Helper.api.updateFCM(this, Helper.user.get(this), Helper.user.getSessionKey(this)!!, token, null)
+        when (message.getString("action")) {
+            "UPDATE" -> {
+                sendBroadcast(Intent(UPDATE_ACTION).putExtra(UPDATE_KEY, message.getJSONArray("data").toString()))
+            }
         }
     }
 }
