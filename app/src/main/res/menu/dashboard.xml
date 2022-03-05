@@ -17,4 +17,7 @@
         android:icon="@drawable/outline_logout_white_24"
         android:title="@string/log_out"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_goto_audio"
+        android:title="Messages" />
 </menu>

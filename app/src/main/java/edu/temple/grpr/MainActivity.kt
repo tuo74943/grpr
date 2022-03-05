@@ -170,6 +170,11 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
             .navigate(R.id.action_dashboardFragment_to_loginFragment)
     }
 
+    override fun loadAudio() {
+        Navigation.findNavController(findViewById(R.id.fragmentContainerView))
+            .navigate(R.id.action_dashboardFragment_to_audioContainerFragment)
+    }
+
     private fun startLocationService(){
         bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE)
         startService(serviceIntent)

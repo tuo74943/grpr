@@ -95,6 +95,9 @@ class DashboardFragment : Fragment(){
                 (activity as DashboardInterface).leaveGroup()
                 return true
             }
+            R.id.action_goto_audio -> {
+                (activity as DashboardInterface).loadAudio()
+            }
         }
         return false
     }
@@ -105,6 +108,7 @@ class DashboardFragment : Fragment(){
         fun endGroup()
         fun leaveGroup()
         fun joinGroup()
+        fun loadAudio()
     }
 
 }
