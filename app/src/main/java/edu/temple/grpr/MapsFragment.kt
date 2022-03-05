@@ -45,7 +45,7 @@ class MapsFragment : Fragment() {
 
         // Update location on map whenever ViewModel is updated
         grprViewModel.getLocation()
-            ?.observe(requireActivity()) {
+            .observe(requireActivity()) {
                 if (myMarker == null) myMarker = map.addMarker(
                     MarkerOptions().position(it)
                 ) else myMarker?.setPosition(it)
@@ -54,7 +54,6 @@ class MapsFragment : Fragment() {
         // Add/update participants on map whenever ViewModel is updated
         grprViewModel.getGroupToObserve()
             .observe(requireActivity()) {
-                Log.d("Observing", "ASD")
                 val group = grprViewModel.getGroup()
                 var participant: Participant
                 val boundBuilder = LatLngBounds.Builder()
