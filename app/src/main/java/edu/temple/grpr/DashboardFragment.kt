@@ -7,8 +7,6 @@ import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.Navigation
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.json.JSONObject
 
@@ -79,6 +77,8 @@ class DashboardFragment : Fragment(){
 
         menu.findItem(R.id.action_join_group).isVisible = Helper.user.getGroupId(requireContext()).isNullOrBlank()
         menu.findItem(R.id.action_leave_group).isVisible = !Helper.user.getGroupId(requireContext()).isNullOrBlank()
+        //TODO uncomment after testing voice messaging
+//        menu.findItem(R.id.action_goto_audio).isVisible = !Helper.user.getGroupId(requireContext()).isNullOrBlank()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

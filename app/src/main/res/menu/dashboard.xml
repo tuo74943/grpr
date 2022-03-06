@@ -19,5 +19,7 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/action_goto_audio"
-        android:title="Messages" />
+        android:icon="@drawable/chat"
+        android:title="@string/string_messages"
+        app:showAsAction="ifRoom" />
 </menu>

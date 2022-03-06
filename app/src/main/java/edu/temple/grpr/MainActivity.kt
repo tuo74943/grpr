@@ -7,15 +7,14 @@ import android.app.NotificationManager
 import android.content.*
 import android.content.pm.PackageManager
 import android.os.*
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 
 
 class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, GroupFragment.GroupControlInterface{
@@ -91,7 +90,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
         }
 
         if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 123)
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.RECORD_AUDIO), 123)
         }
     }
 
@@ -118,6 +117,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
                 if (Helper.api.isSuccess(response)) {
                     grprViewModel.setGroupId(response.getString("group_id"))
                     Helper.user.saveGroupId(this@MainActivity, grprViewModel.getGroupId().value!!)
+                    invalidateOptionsMenu()
                     startLocationService()
                 } else {
                     Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
@@ -140,6 +140,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
                         if (Helper.api.isSuccess(response)) {
                             grprViewModel.setGroupId("")
                             Helper.user.clearGroupId(this@MainActivity)
+                            invalidateOptionsMenu()
                             stopLocationService()
                         } else
                             Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
@@ -225,7 +226,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if(requestCode == 123){
-            if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+            if(grantResults[0] != PackageManager.PERMISSION_GRANTED || grantResults[2] != PackageManager.PERMISSION_GRANTED){
                 //if permissions were not granted we close the app
                 finish()
             }

@@ -18,7 +18,7 @@ class AudioMessAdapter(_context : Context, _list : ArrayList<User>, ocl: (User)-
         val playButton = itemView.findViewById<ImageButton>(R.id.playButton)
 
         fun bind(user: User, onClick : (User) -> Unit){
-            val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+            val sdf = SimpleDateFormat("MM/dd HH:mm", Locale.getDefault())
             val currentDateandTime: String = sdf.format(Date())
 
             usernameTV.text = user.username
