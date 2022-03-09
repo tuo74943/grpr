@@ -30,13 +30,20 @@ class AudioListFragment : Fragment() {
         val layout = inflater.inflate(R.layout.fragment_audio_list, container, false)
 
         recyclerView = layout.findViewById(R.id.recyclerView)
+        return layout
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         val adapter = AudioMessAdapter(requireContext(), grPrViewModel.getMessageList(), {audioMessage : AudioMessage -> onClick(audioMessage) })
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-
-        return layout
+        grPrViewModel.getListToObserve().observe(requireActivity()){
+            Log.d("Observer", "list changed notifying adapter")
+            adapter.notifyDataSetChanged()
+        }
     }
 
     fun onClick(audioMessage: AudioMessage){

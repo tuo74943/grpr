@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-class AudioMessAdapter(_context : Context, _list : ArrayList<AudioMessage>, ocl: (AudioMessage)-> Unit) : RecyclerView.Adapter<AudioMessAdapter.AudioViewHolder>(){
+class AudioMessAdapter(_context : Context, _list : MessageList, ocl: (AudioMessage)-> Unit) : RecyclerView.Adapter<AudioMessAdapter.AudioViewHolder>(){
     class AudioViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
         val usernameTV = itemView.findViewById<TextView>(R.id.usernameTextView)
         val timeTV = itemView.findViewById<TextView>(R.id.timeTextView)
@@ -38,7 +38,7 @@ class AudioMessAdapter(_context : Context, _list : ArrayList<AudioMessage>, ocl:
     }
 
     override fun onBindViewHolder(holder: AudioViewHolder, position: Int) {
-        holder.bind(list[position], onClick)
+        holder.bind(list.getMessage(position), onClick)
     }
 
     override fun getItemCount(): Int {

@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.content.*
 import android.content.pm.PackageManager
 import android.os.*
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -14,17 +15,20 @@ import androidx.navigation.Navigation
 import com.google.android.gms.maps.model.LatLng
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.File
+import java.io.*
 
 
 class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, GroupFragment.GroupControlInterface{
-
     var serviceIntent : Intent? = null
     val grprViewModel : GrPrViewModel by lazy {
         ViewModelProvider(this).get(GrPrViewModel::class.java)
     }
 
     var isConnected = false
+    private val filename = "MessageList"
+    val file : File by lazy {
+        File(filesDir, filename)
+    }
 
     //updates Viewmodel with location data whenever we recieve it from the locationservice
     var locationHandler = object : Handler(Looper.myLooper()!!) {
@@ -76,6 +80,10 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
         createNotificationChannel()
         serviceIntent = Intent(this, LocationService::class.java)
 
+        if(file.exists()){
+//            Log.d("Item", readFromFile()?.size.toString())
+            grprViewModel.setMessageList(readFromFile()!!)
+        }
 
         grprViewModel.getGroupId().observe(this) {
             if (!it.isNullOrEmpty())
@@ -83,6 +91,8 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
             else
                 supportActionBar?.title = "GRPR"
         }
+
+
 
         Helper.user.getGroupId(this)?.run {
             grprViewModel.setGroupId(this)
@@ -94,6 +104,36 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
         }
     }
 
+    private fun writeToFile() {
+        try {
+            val fileOutputStream: FileOutputStream = this.openFileOutput(filename, MODE_PRIVATE)
+            val objectOutputStream = ObjectOutputStream(fileOutputStream)
+            objectOutputStream.writeObject(grprViewModel.getMessageList())
+            objectOutputStream.close()
+            fileOutputStream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun readFromFile() : MessageList? {
+        var messageList: MessageList? = null
+
+        try {
+            val fileInputStream: FileInputStream = openFileInput(filename)
+            val objectInputStream = ObjectInputStream(fileInputStream)
+            messageList = objectInputStream.readObject() as MessageList
+            objectInputStream.close()
+            fileInputStream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: ClassNotFoundException) {
+            e.printStackTrace()
+        }
+
+        return messageList
+    }
+
     override fun onResume() {
         super.onResume()
         registerReceiver(groupBroadCastReceiver, IntentFilter(MyFirebaseMessagingService.UPDATE_ACTION))
@@ -102,6 +142,14 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
     override fun onPause() {
         super.onPause()
         unregisterReceiver(groupBroadCastReceiver)
+        if(!Helper.user.getGroupId(this).isNullOrBlank()){
+            Log.d("File", "written to")
+            writeToFile()
+        }
+        else{
+            Log.d("File", "deleted")
+            file.delete()
+        }
     }
 
     private fun createNotificationChannel() {
@@ -142,6 +190,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
                             Helper.user.clearGroupId(this@MainActivity)
                             invalidateOptionsMenu()
                             stopLocationService()
+                            grprViewModel.removeMessageList()
                         } else
                             Toast.makeText(this@MainActivity, Helper.api.getErrorMessage(response), Toast.LENGTH_SHORT).show()
                     }
@@ -214,7 +263,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
                 override fun processResponse(response: JSONObject) {
                     Helper.user.clearGroupId(this@MainActivity)
                     stopLocationService()
-
+                    grprViewModel.removeMessageList()
                     // Refresh action bar menu items
                     invalidateOptionsMenu()
                 }

@@ -8,7 +8,11 @@ import com.google.android.gms.maps.model.LatLng
 class GrPrViewModel : ViewModel() {
 
     private val messages by lazy {
-        ArrayList<AudioMessage>()
+        MessageList()
+    }
+
+    private val messagesLive by lazy {
+        MutableLiveData<MessageList>()
     }
 
     private val participants by lazy{
@@ -50,10 +54,6 @@ class GrPrViewModel : ViewModel() {
         this.group.value = group
     }
 
-    fun addMessage(audioMessage: AudioMessage){
-        this.messages.add(audioMessage)
-    }
-
     //livedata to observe
     fun getGroupToObserve() : LiveData<Group>{
         return group
@@ -64,7 +64,26 @@ class GrPrViewModel : ViewModel() {
         return participants
     }
 
-    fun getMessageList(): ArrayList<AudioMessage>{
+    fun setMessageList(_messageList : MessageList){
+        messages.setMessages(_messageList)
+        this.messagesLive.value = messages
+    }
+
+    fun addMessage(_audioMessage : AudioMessage){
+        messages.addMessage(_audioMessage)
+        this.messagesLive.value = messages
+    }
+
+    fun removeMessageList(){
+        messages.removeMessages()
+        this.messagesLive.value = messages
+    }
+
+    fun getListToObserve() : LiveData<MessageList>{
+        return messagesLive
+    }
+
+    fun getMessageList(): MessageList{
         return messages
     }
 }
