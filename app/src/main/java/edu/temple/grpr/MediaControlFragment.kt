@@ -12,8 +12,13 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
 import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MediaControlFragment : Fragment() {
 
@@ -24,10 +29,13 @@ class MediaControlFragment : Fragment() {
 
     var player: MediaPlayer? = null
     var recorder: MediaRecorder? = null
-    val filename = "my_file"
-    lateinit var file : File
+    var filename : String? = null
+    var file : File? = null
     var isRecording = false
 
+    val grPrViewModel by lazy {
+        ViewModelProvider(requireActivity()).get(GrPrViewModel::class.java)
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -40,32 +48,37 @@ class MediaControlFragment : Fragment() {
         cancelButton = layout.findViewById(R.id.cancelButton)
         sendButton = layout.findViewById(R.id.sendButton)
 
-        file = File(context?.filesDir, filename)
-
         recordButton.setOnClickListener{
-            addUI()
-            isRecording = true
-            startRecording()
+            if(isRecording){
+                //stop recording
+                stopRecording()
+                recordButton.setImageDrawable(ResourcesCompat.getDrawable(resources,R.drawable.outline_mic_black_36,null))
+                isRecording = false
+                updateUI()
+            }else{
+                //start recording
+                recordButton.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.circle_36, null))
+                isRecording = true
+                startRecording()
+            }
         }
 
         playButton.setOnClickListener {
-            //TODO Play audio recorded from record button
             startPlaying()
         }
 
         cancelButton.setOnClickListener {
-            //TODO Delete audio recorded and reset fragment to original state
-            if(isRecording) {
-                stopRecording()
-                isRecording = false
-            }
-            //removeUI()
+            //deletes file created and resets UI
+            file!!.delete()
+            resetUI()
         }
 
         sendButton.setOnClickListener {
             //TODO Send audio file to fcm and place it into recyclerview
-
-            removeUI()
+            grPrViewModel.addMessage(AudioMessage(Helper.user.get(requireContext()).username,
+                file!!
+            ))
+            resetUI()
         }
 
         return layout
@@ -73,23 +86,31 @@ class MediaControlFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        removeUI()
+        resetUI()
     }
 
-    fun removeUI(){
+    fun resetUI(){
         playButton.visibility = View.INVISIBLE
         cancelButton.visibility = View.INVISIBLE
         sendButton.visibility = View.INVISIBLE
+        recordButton.visibility = View.VISIBLE
+
     }
 
-    fun addUI(){
+    fun updateUI(){
         playButton.visibility = View.VISIBLE
         cancelButton.visibility = View.VISIBLE
         sendButton.visibility = View.VISIBLE
+        recordButton.visibility = View.INVISIBLE
     }
 
     private fun startRecording() {
-        Toast.makeText(requireContext(), "Recording", Toast.LENGTH_SHORT).show()
+        val formatter = SimpleDateFormat("yyyy_MM_dd_hh_mm_ss", Locale.US)
+        val date = Date()
+        filename = "Recording_" + formatter.format(date) + ".3gp"
+        file = File(context?.filesDir, filename!!)
+        Log.d("Filename", filename!!)
+
         recorder = MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
@@ -116,7 +137,7 @@ class MediaControlFragment : Fragment() {
     private fun startPlaying() {
         player = MediaPlayer().apply {
             try {
-                setDataSource(file.path)
+                setDataSource(file!!.path)
                 prepare()
                 start()
             } catch (e: IOException) {

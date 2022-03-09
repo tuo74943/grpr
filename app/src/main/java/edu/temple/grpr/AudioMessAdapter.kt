@@ -11,19 +11,19 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-class AudioMessAdapter(_context : Context, _list : ArrayList<User>, ocl: (User)-> Unit) : RecyclerView.Adapter<AudioMessAdapter.AudioViewHolder>(){
+class AudioMessAdapter(_context : Context, _list : ArrayList<AudioMessage>, ocl: (AudioMessage)-> Unit) : RecyclerView.Adapter<AudioMessAdapter.AudioViewHolder>(){
     class AudioViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
         val usernameTV = itemView.findViewById<TextView>(R.id.usernameTextView)
         val timeTV = itemView.findViewById<TextView>(R.id.timeTextView)
         val playButton = itemView.findViewById<ImageButton>(R.id.playButton)
 
-        fun bind(user: User, onClick : (User) -> Unit){
+        fun bind(audioMessage: AudioMessage, onClick : (AudioMessage) -> Unit){
             val sdf = SimpleDateFormat("MM/dd HH:mm", Locale.getDefault())
             val currentDateandTime: String = sdf.format(Date())
 
-            usernameTV.text = user.username
+            usernameTV.text = audioMessage.username
             timeTV.text = currentDateandTime
-            playButton.setOnClickListener { onClick(user) }
+            playButton.setOnClickListener { onClick(audioMessage) }
         }
     }
 
