@@ -15,6 +15,8 @@ import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import com.android.volley.Request
+import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -75,11 +77,13 @@ class MediaControlFragment : Fragment() {
         }
 
         sendButton.setOnClickListener {
-            //TODO Send audio file to fcm and place it into recyclerview
             val sdf = SimpleDateFormat("MM/dd HH:mm:ss", Locale.getDefault())
             val currentTime: String = sdf.format(Date())
             grPrViewModel.addMessage(AudioMessage(Helper.user.get(requireContext()).username,
                 file!!, currentTime))
+
+            //TODO send to api as a message and file attached
+
             resetUI()
         }
 

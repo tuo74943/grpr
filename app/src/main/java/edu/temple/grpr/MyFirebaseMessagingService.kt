@@ -13,6 +13,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     companion object {
         val UPDATE_ACTION = "grpr_action_update"
         val UPDATE_KEY = "grpr_update_key"
+        val UPDATE_MESSAGE = "grpr_action_message"
+        val MESSAGE_KEY = "grpr_message_key"
     }
 
     //on initial startup, FCM SDK generates a registration token for the client app instance.
@@ -30,6 +32,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         when (message.getString("action")) {
             "UPDATE" -> {
                 sendBroadcast(Intent(UPDATE_ACTION).putExtra(UPDATE_KEY, message.getJSONArray("data").toString()))
+            }
+            "MESSAGE" -> {
+                sendBroadcast(Intent(UPDATE_MESSAGE).putExtra(MESSAGE_KEY, message.toString()))
             }
         }
     }

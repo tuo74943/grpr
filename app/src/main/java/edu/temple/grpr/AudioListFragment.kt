@@ -12,12 +12,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.io.File
 import java.io.IOException
+import java.util.*
 
 class AudioListFragment : Fragment() {
 
     private var player: MediaPlayer? = null
     lateinit var recyclerView: RecyclerView
-
+//    val queue: Queue<File> = LinkedList()
     val grPrViewModel by lazy {
         ViewModelProvider(requireActivity()).get(GrPrViewModel::class.java)
     }
@@ -43,11 +44,12 @@ class AudioListFragment : Fragment() {
         grPrViewModel.getListToObserve().observe(requireActivity()){
             Log.d("Observer", "list changed notifying adapter")
             adapter.notifyDataSetChanged()
+            recyclerView.scrollToPosition(grPrViewModel.getMessageList().size-1);
         }
     }
 
     fun onClick(audioMessage: AudioMessage){
-        Log.d("button was pressed", "button!@!")
+        //TODO add to mediaplayer queue
         startPlaying(audioMessage.audioFile)
     }
 
@@ -62,5 +64,4 @@ class AudioListFragment : Fragment() {
             }
         }
     }
-
 }

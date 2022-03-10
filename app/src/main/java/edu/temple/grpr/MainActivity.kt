@@ -16,6 +16,8 @@ import com.google.android.gms.maps.model.LatLng
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, GroupFragment.GroupControlInterface{
@@ -56,6 +58,25 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
             }
 
             grprViewModel.setGroup(group)
+        }
+    }
+
+    private val messageBroadcastReceiver = object : BroadcastReceiver(){
+        override fun onReceive(p0: Context?, p1: Intent?) {
+            val messageContent = JSONObject(p1!!.getStringExtra(MyFirebaseMessagingService.MESSAGE_KEY))
+            val username = messageContent.getString("username")
+            val fileLink = messageContent.getString("message_file")
+
+            val sdf = SimpleDateFormat("MM/dd HH:mm:ss", Locale.getDefault())
+            val currentTime: String = sdf.format(Date())
+
+            //In successfull download response
+            //set name of file to unique file_name || if file is already unique just save path to audiomessage object
+            val tempfilename = "downloaded_file_" + currentTime + ".mp3"
+            //save file in dir
+            val newFile = File(filesDir, tempfilename)
+            //updating viewmodel --> update list --> updating UI
+            grprViewModel.addMessage(AudioMessage(username, newFile, currentTime))
         }
 
     }
@@ -136,11 +157,13 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
     override fun onResume() {
         super.onResume()
         registerReceiver(groupBroadCastReceiver, IntentFilter(MyFirebaseMessagingService.UPDATE_ACTION))
+        registerReceiver(messageBroadcastReceiver, IntentFilter(MyFirebaseMessagingService.UPDATE_MESSAGE))
     }
 
     override fun onPause() {
         super.onPause()
         unregisterReceiver(groupBroadCastReceiver)
+        unregisterReceiver(messageBroadcastReceiver)
         if(!Helper.user.getGroupId(this).isNullOrBlank()){
             Log.d("File", "written to")
             writeToFile()

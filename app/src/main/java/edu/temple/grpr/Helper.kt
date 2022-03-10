@@ -7,6 +7,7 @@ import android.util.Log
 import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.google.android.gms.common.util.IOUtils.toByteArray
 import com.google.android.gms.maps.model.LatLng
 import org.json.JSONObject
 import java.io.File
@@ -112,15 +113,21 @@ class Helper {
             makeRequest(context, ENDPOINT_GROUP, params, response)
         }
 //
-//        fun sendFile(context: Context, user: User, sessionKey: String, groupId: String, fileData : ByteArray){
+//        fun sendFile(context: Context, user: User, sessionKey: String, groupId: String, file : File, response: Response?){
 //            val params = mutableMapOf(
 //                Pair("action", "MESSAGE"),
 //                Pair("username", user.username),
 //                Pair("session_key", sessionKey),
 //                Pair("group_id", groupId),
-//                Pair("message_file", fileData)
+//                Pair("message_file", file.toString())
 //            )
+//
+//            makeFileRequest(context, ENDPOINT_GROUP, params, response, file)
 //        }
+
+        private fun makeFileRequest(context: Context, url : String){
+            //TODO make a GET request to download a file provided with a URL
+        }
 
         private fun makeRequest(context: Context, endPoint: String, params: MutableMap<String, String>, responseCallback: Response?) {
             Volley.newRequestQueue(context)
@@ -133,6 +140,27 @@ class Helper {
                     }
                 })
         }
+
+//        private fun sendFileRequest(context: Context, endPoint: String, params: MutableMap<String, String>, responseCallback: Response?, file: File) {
+//            Volley.newRequestQueue(context)
+//                .add(object: StringRequest(Method.POST, API_BASE + endPoint, {
+//                    Log.d("Server Response", it)
+//                    responseCallback?.processResponse(JSONObject(it))
+//                }, {}){
+//                    override fun getParams(): MutableMap<String, String>? {
+//                        return params
+//                    }
+//
+//                    override fun getBodyContentType(): String {
+//                        return "multipart/form-data"
+//                    }
+//
+//                    override fun getBody(): ByteArray {
+//                        return file.readBytes()
+//                    }
+//
+//                })
+//        }
 
         fun isSuccess(response: JSONObject): Boolean {
             return response.getString("status").equals("SUCCESS")
