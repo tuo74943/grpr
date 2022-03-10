@@ -75,9 +75,10 @@ class MediaControlFragment : Fragment() {
 
         sendButton.setOnClickListener {
             //TODO Send audio file to fcm and place it into recyclerview
+            val sdf = SimpleDateFormat("MM/dd HH:mm:ss", Locale.getDefault())
+            val currentTime: String = sdf.format(Date())
             grPrViewModel.addMessage(AudioMessage(Helper.user.get(requireContext()).username,
-                file!!
-            ))
+                file!!, currentTime))
             resetUI()
         }
 
@@ -107,7 +108,7 @@ class MediaControlFragment : Fragment() {
     private fun startRecording() {
         val formatter = SimpleDateFormat("yyyy_MM_dd_hh_mm_ss", Locale.US)
         val date = Date()
-        filename = "Recording_" + formatter.format(date) + ".3gp"
+        filename = "Recording_" + formatter.format(date) + ".mp3"
         file = File(context?.filesDir, filename!!)
         Log.d("Filename", filename!!)
 
