@@ -96,6 +96,7 @@ class DashboardFragment : Fragment(){
             }
             R.id.action_goto_audio -> {
                 (activity as DashboardInterface).loadAudio()
+                return true
             }
         }
         return false

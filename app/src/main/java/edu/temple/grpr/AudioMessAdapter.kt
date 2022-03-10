@@ -18,11 +18,8 @@ class AudioMessAdapter(_context : Context, _list : MessageList, ocl: (AudioMessa
         val playButton = itemView.findViewById<ImageButton>(R.id.playButton)
 
         fun bind(audioMessage: AudioMessage, onClick : (AudioMessage) -> Unit){
-            val sdf = SimpleDateFormat("MM/dd HH:mm", Locale.getDefault())
-            val currentDateandTime: String = sdf.format(Date())
-
             usernameTV.text = audioMessage.username
-            timeTV.text = currentDateandTime
+            timeTV.text = audioMessage.time
             playButton.setOnClickListener { onClick(audioMessage) }
         }
     }

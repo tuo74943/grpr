@@ -24,7 +24,6 @@
     <string name="entrance_color">#03DAC5</string>
     <string name="end">end</string>
     <string name="leave_group">Leave Group</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="send">Send</string>
     <string name="messages">Messages</string>

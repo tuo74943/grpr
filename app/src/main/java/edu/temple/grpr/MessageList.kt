@@ -22,8 +22,8 @@ class MessageList : Serializable {
     fun removeMessages(){
         for (i in 0 until messageList.size){
             messageList[i].deleteFile()
-            messageList.removeAt(i)
         }
+        messageList.clear()
     }
 
     fun getMessage(index : Int) : AudioMessage{

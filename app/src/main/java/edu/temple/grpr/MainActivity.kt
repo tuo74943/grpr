@@ -81,7 +81,6 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
         serviceIntent = Intent(this, LocationService::class.java)
 
         if(file.exists()){
-//            Log.d("Item", readFromFile()?.size.toString())
             grprViewModel.setMessageList(readFromFile()!!)
         }
 
@@ -200,6 +199,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
             .setNegativeButton("Cancel") { p0, _ -> p0.cancel() }
             .show()
     }
+
     override fun joinGroup() {
         Navigation.findNavController(findViewById(R.id.fragmentContainerView))
             .navigate(R.id.action_dashboardFragment_to_groupFragment, Bundle().apply {
@@ -244,6 +244,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
             object: Helper.api.Response {
                 override fun processResponse(response: JSONObject) {
                     Helper.user.saveGroupId(this@MainActivity, groupId)
+                    grprViewModel.setGroupId(groupId)
                     startLocationService()
                     // Refresh action bar menu items
                     invalidateOptionsMenu()
@@ -262,6 +263,7 @@ class MainActivity : AppCompatActivity(), DashboardFragment.DashboardInterface, 
             object: Helper.api.Response {
                 override fun processResponse(response: JSONObject) {
                     Helper.user.clearGroupId(this@MainActivity)
+                    grprViewModel.setGroupId("")
                     stopLocationService()
                     grprViewModel.removeMessageList()
                     // Refresh action bar menu items

@@ -23,6 +23,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        super.onMessageReceived(remoteMessage)
         Log.d("FCM Message", remoteMessage.data["payload"].toString())
         val message = JSONObject(remoteMessage.data["payload"].toString())
 
